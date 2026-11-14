@@ -7,6 +7,7 @@ Standard library only. Usage: python3 build.py [--check]
 """
 import html
 import json
+import os
 import re
 import shutil
 import sys
@@ -14,7 +15,32 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 SRC = ROOT / "recipes"
+IMAGES = ROOT / "images"
 OUT = ROOT / "_site"
+
+
+def site_url():
+    """Absolute base URL, so JSON-LD image links work outside the page."""
+    if os.environ.get("SITE_URL"):
+        return os.environ["SITE_URL"].rstrip("/") + "/"
+    repo = os.environ.get("GITHUB_REPOSITORY")  # set in GitHub Actions
+    if repo:
+        owner, name = repo.split("/")
+        return f"https://{owner.lower()}.github.io/{name}/"
+    return ""
+
+
+def images_of(r):
+    """Normalize schema.org image (str | list | ImageObject) to a list of str."""
+    img = r.get("image")
+    if not img:
+        return []
+    items = img if isinstance(img, list) else [img]
+    return [i.get("url") if isinstance(i, dict) else i for i in items if i]
+
+
+def is_local(path):
+    return not re.match(r"^https?://", path)
 REQUIRED = ["name", "recipeIngredient", "recipeInstructions"]
 DURATION = re.compile(r"^P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$")
 
@@ -31,7 +57,9 @@ li{margin:.5em 0}
 .back{font-size:.9em;text-decoration:none}
 .list{list-style:none;padding:0}
 .list li{padding:14px 0;border-bottom:1px solid color-mix(in srgb,currentColor 15%,transparent)}
-.list a{font-size:1.15em;font-weight:600;text-decoration:none}
+.list a{display:flex;gap:14px;align-items:center;text-decoration:none;color:inherit}
+.list img,.list .ph{flex:none;width:76px;height:76px;border-radius:10px;object-fit:cover;background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.list b{font-size:1.1em;color:var(--accent)}
 .list p{margin:.2em 0 0;opacity:.7;font-size:.9em}
 img.hero{width:100%;border-radius:12px;margin:.5em 0 1em}
 """
@@ -83,11 +111,18 @@ def validate(slug, r):
             errs.append(f"{k} {r[k]!r} is not ISO 8601 (e.g. PT1H15M)")
     if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", slug):
         errs.append("file name must be lowercase-kebab-case")
+    for img in images_of(r):
+        if is_local(img) and not (ROOT / img).is_file():
+            errs.append(f"image {img!r} not found")
     return errs
 
 
-def page(r, slug):
+def page(r, slug, base):
     r = {"@context": "https://schema.org", **r}
+    imgs = images_of(r)
+    hero = ("../" + imgs[0]) if imgs and is_local(imgs[0]) else (imgs[0] if imgs else None)
+    if imgs:  # JSON-LD wants absolute URLs
+        r["image"] = [base + i if is_local(i) else i for i in imgs]
     meta = []
     if r.get("recipeYield"):
         y = r["recipeYield"]
@@ -118,11 +153,6 @@ def page(r, slug):
     if ol_open:
         body.append("</ol>")
 
-    img = r.get("image")
-    if isinstance(img, list):
-        img = img[0] if img else None
-    if isinstance(img, dict):
-        img = img.get("url")
     source = r.get("isBasedOn") or r.get("url")
     ld_json = json.dumps(r, indent=2, ensure_ascii=False).replace("</", "<\\/")
 
@@ -138,7 +168,7 @@ def page(r, slug):
 </head><body>
 <a class="back" href="../">← All recipes</a>
 <h1>{e(r['name'])}</h1>
-{f'<img class="hero" src="{e(img)}" alt="">' if img else ''}
+{f'<img class="hero" src="{e(hero)}" alt="{e(r["name"])}">' if hero else ''}
 {f"<p>{e(r['description'])}</p>" if r.get('description') else ''}
 <p class="meta">{' · '.join(meta)}</p>
 <h2>Ingredients</h2>
@@ -151,11 +181,18 @@ def page(r, slug):
 
 
 def index(recipes):
+    def item(slug, r):
+        imgs = images_of(r)
+        thumb = (
+            f'<img src="{e(imgs[0])}" alt="" loading="lazy">'
+            if imgs
+            else '<span class="ph"></span>'
+        )
+        desc = f'<p>{e(r["description"])}</p>' if r.get("description") else ""
+        return f'<li><a href="{slug}/">{thumb}<span><b>{e(r["name"])}</b>{desc}</span></a></li>'
+
     items = "".join(
-        f'<li><a href="{slug}/">{e(r["name"])}</a>'
-        + (f'<p>{e(r.get("description", ""))}</p>' if r.get("description") else "")
-        + "</li>"
-        for slug, r in sorted(recipes, key=lambda x: x[1]["name"].lower())
+        item(slug, r) for slug, r in sorted(recipes, key=lambda x: x[1]["name"].lower())
     )
     return f"""<!DOCTYPE html>
 <html lang="en"><head>
@@ -194,10 +231,13 @@ def main():
     shutil.rmtree(OUT, ignore_errors=True)
     OUT.mkdir()
     (OUT / ".nojekyll").touch()
+    if IMAGES.is_dir():
+        shutil.copytree(IMAGES, OUT / "images")
+    base = site_url()
     (OUT / "index.html").write_text(index(recipes))
     for slug, r in recipes:
         (OUT / slug).mkdir()
-        (OUT / slug / "index.html").write_text(page(r, slug))
+        (OUT / slug / "index.html").write_text(page(r, slug, base))
     print(f"Built {len(recipes)} recipe(s) into {OUT}/")
 
 

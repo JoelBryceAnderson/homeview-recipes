@@ -1,29 +1,47 @@
-# Recipes
+# HomeView Recipes
 
-Personal recipe pages built for **Safari's Start Cooking mode on Apple HomeView**.
+Your own recipes in **Start Cooking** mode on Apple HomeView: step-by-step
+instructions, ingredient tracking and hands-free timers.
 
-Each recipe is a [schema.org Recipe](https://schema.org/Recipe) JSON file in
-`recipes/`. On every push, GitHub Actions runs `build.py`, which validates the
-files and turns each one into a page with the recipe embedded as JSON-LD. The
-result is deployed to GitHub Pages.
+Safari on HomeView builds that view from [schema.org Recipe](https://schema.org/Recipe)
+JSON-LD embedded in a web page. This repo keeps each recipe as a JSON file and
+uses GitHub Actions to publish a page per recipe to GitHub Pages for free.
 
 ```
-recipes/deviled-eggs.json  →  https://<owner>.github.io/<repo>/deviled-eggs/
+recipes/deviled-eggs.json  →  https://<you>.github.io/homeview-recipes/deviled-eggs/
 ```
 
-Open a page in Safari on HomeView, or on iPhone and hand it off, then tap
-**Start Cooking**. The same pages also import cleanly into Paprika, Mela,
-and other recipe apps.
+## Set up your own (5 minutes)
 
-## Add a recipe
+1. **Copy this repo.** Fork it, or create a new **public** repo and upload these
+   files. Delete the example recipes in `recipes/` and `images/` if you like.
+2. **Turn on Pages.** Go to **Settings → Pages → Source** and pick **GitHub Actions**.
+3. **Run it once.** Go to **Actions**, open the latest run and choose **Re-run all
+   jobs**. Your index is then live at `https://<you>.github.io/<repo>/`.
+4. **Cook.** Open a recipe page in Safari on HomeView, or open it on iPhone and
+   hand it off, then tap **Start Cooking**.
 
-Send Claude a link, pasted recipe or photo and ask it to add the recipe to this
-repo. `CLAUDE.md` describes the format. To do it by hand:
+## Add recipes
 
-1. Add `recipes/<lowercase-kebab-name>.json`.
-2. `python3 build.py` builds the site into `_site/` locally (standard library only).
-3. Commit and push to `main`.
+**With Claude (easiest).** Connect the repo to Claude and send it a link,
+pasted text or a photo of a cookbook page with "add this to my recipes".
+`CLAUDE.md` tells Claude the format, how to check it and how to publish it, and
+it replies with the URL.
 
-## One-time setup
+**By hand.**
 
-**Settings → Pages → Build and deployment → Source: GitHub Actions.**
+1. Add `recipes/<lowercase-kebab-name>.json`. Copy an existing recipe as a
+   template.
+2. Optional photo: `python3 add_image.py <name> photo.jpg`. This resizes the photo
+   and strips location data. Needs `pip install pillow`, plus `pillow-heif` for
+   HEIC.
+3. Run `python3 build.py --check` to validate, then commit and push.
+
+## Tips
+
+- Write durations into step text ("simmer 10 to 15 minutes"). HomeView sets
+  timers from them.
+- Times use ISO 8601: `PT15M`, `PT1H20M`.
+- Every page also imports cleanly into Paprika, Mela and other recipe apps.
+- To preview locally, run `python3 build.py` and then
+  `python3 -m http.server -d _site`.

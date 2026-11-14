@@ -22,8 +22,10 @@ When Joel sends a recipe (a URL, pasted text, or a photo):
      `totalTime` when known, plus `recipeYield`, `description` and `recipeCategory`.
    - If adapted from a web page, set `isBasedOn` to its URL. Don't copy the
      page's headnote or story; write a short `description` in your own words.
-   - `image` must be a URL you were given or found on the source page. Never
-     invent one.
+   - Images: when Joel sends a photo, run `python3 add_image.py <slug> <photo>`.
+     It resizes the photo, strips EXIF/GPS, saves `images/<slug>.jpg` and sets
+     `image`. Otherwise `image` may be the source page's own image URL. Never
+     invent one or pull in unrelated stock photos.
 3. Run `python3 build.py --check`. It must pass.
 4. Commit as `Add <dish name>` and push to `main`. GitHub Actions deploys to Pages.
 5. Give Joel the link: `https://<owner>.github.io/<repo>/<slug>/`.
