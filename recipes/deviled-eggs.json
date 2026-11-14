@@ -1,0 +1,57 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Deviled Eggs with Relish & Chili",
+  "description": "Classic, tangy deviled eggs with sweet relish and a chili powder dusting.",
+  "recipeCategory": "Appetizer",
+  "recipeCuisine": "American",
+  "keywords": "deviled eggs, Thanksgiving, Friendsgiving, appetizer",
+  "prepTime": "PT20M",
+  "cookTime": "PT12M",
+  "totalTime": "PT1H",
+  "recipeYield": "24 halves",
+  "recipeIngredient": [
+    "12 large eggs",
+    "1/2 cup mayonnaise",
+    "2 teaspoons mustard (Dijon or yellow)",
+    "3 tablespoons sweet relish, drained",
+    "1/4 teaspoon salt",
+    "1/2 teaspoon chili powder, for dusting"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Boil the eggs",
+      "text": "Place eggs in a pot and cover with cold water by an inch. Bring to a boil, then cover, turn off the heat, and let sit 12 minutes."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Ice bath",
+      "text": "Move eggs to a bowl of ice water for 10 minutes to stop the cooking and make peeling easier."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Peel and halve",
+      "text": "Peel the eggs, slice in half lengthwise, and pop the yolks into a bowl. Arrange whites on a platter."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Make the filling",
+      "text": "Mash yolks with a fork until fine, then mix in mayonnaise, mustard, relish, and salt until smooth. Taste and adjust."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Fill and garnish",
+      "text": "Spoon or pipe the filling into the whites (a zip-top bag with the corner snipped works well). Dust with chili powder."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Chill",
+      "text": "Refrigerate at least 30 minutes, until it's time to leave. Keep covered for transport."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "A muffin tin keeps the halves from sliding during transport, or carry whites and filling separately and pipe on arrival."
+    }
+  ]
+}

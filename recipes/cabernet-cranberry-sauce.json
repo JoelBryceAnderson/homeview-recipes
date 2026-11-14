@@ -1,0 +1,46 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Cabernet Cranberry Sauce",
+  "description": "Cranberry sauce simmered in Cabernet Sauvignon with tangerine and cinnamon. Keeps in the fridge up to 2 months and freezes well.",
+  "recipeCategory": "Side Dish",
+  "recipeCuisine": "American",
+  "keywords": "cranberry sauce, Thanksgiving, Friendsgiving, wine",
+  "prepTime": "PT5M",
+  "cookTime": "PT20M",
+  "totalTime": "PT25M",
+  "recipeYield": "3 1/2 cups",
+  "recipeIngredient": [
+    "1 1/4 cups sugar",
+    "1 cup Cabernet Sauvignon",
+    "1 (12-ounce) package fresh cranberries",
+    "2 teaspoons grated tangerine rind",
+    "1 (3-inch) cinnamon stick"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Boil sugar and wine",
+      "text": "Bring sugar and wine to a boil in a medium saucepan over medium-high heat."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Add cranberries",
+      "text": "Add cranberries, tangerine rind, and cinnamon stick, and return to a boil, stirring constantly."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Simmer",
+      "text": "Reduce heat and simmer, partially covered, 10 to 15 minutes or until cranberry skins pop."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Finish",
+      "text": "Remove and discard cinnamon stick. Cool slightly; serve warm, or chill 2 hours if desired."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Sauce may be stored in the refrigerator up to 2 months. Also freezes well."
+    }
+  ]
+}
