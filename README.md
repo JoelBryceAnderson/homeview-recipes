@@ -39,6 +39,8 @@ it replies with the URL.
 
 ## Tips
 
+- Restate each ingredient's quantity the first time a step uses it
+  ("add 2 teaspoons mustard"), so nobody has to flip back to the list.
 - Write durations into step text ("simmer 10 to 15 minutes"). HomeView sets
   timers from them.
 - Times use ISO 8601: `PT15M`, `PT1H20M`.

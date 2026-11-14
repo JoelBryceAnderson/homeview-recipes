@@ -16,6 +16,10 @@ When Joel sends a recipe (a URL, pasted text, or a photo):
    - `recipeInstructions` is an array of `HowToStep` objects with a short `name`
      and full `text`. Use `HowToSection` for multi-part recipes and `HowToTip` for
      notes (storage, make-ahead, substitutions).
+   - The first time a step uses an ingredient, restate its quantity
+     ("whisk 1/2 cup mayonnaise and 2 teaspoons mustard"), so the cook never
+     has to flip back to the ingredient list. Later mentions can just name it
+     ("the filling", "the cranberries").
    - Put explicit durations in step text ("simmer 10 to 15 minutes"). HomeView
      picks up timers from the step text.
    - Times are ISO 8601: `PT15M`, `PT1H20M`. Include `prepTime`, `cookTime` and
