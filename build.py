@@ -45,23 +45,34 @@ REQUIRED = ["name", "recipeIngredient", "recipeInstructions"]
 DURATION = re.compile(r"^P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$")
 
 CSS = """
-:root{color-scheme:light dark;--accent:#b3263a}
+:root{color-scheme:light dark;--accent:#b3263a;--tint:color-mix(in srgb,var(--accent) 14%,transparent);--line:color-mix(in srgb,currentColor 15%,transparent)}
 *{box-sizing:border-box}
-body{font:17px/1.55 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;max-width:680px;margin:0 auto;padding:32px 20px 64px}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* Sized for HomeView: a 7-inch square touch screen with rounded corners, read from arm's length. */
+body{font:19px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;max-width:720px;margin:0 auto;padding:28px 28px 80px}
 a{color:var(--accent)}
-h1{font-size:1.9em;line-height:1.15;margin:0 0 .35em}
-h2{font-size:.95em;text-transform:uppercase;letter-spacing:.07em;opacity:.65;margin:2.2em 0 .6em}
-.meta{opacity:.65;font-size:.9em}
-li{margin:.5em 0}
-.tip{border-left:3px solid var(--accent);padding-left:12px;opacity:.85}
-.back{font-size:.9em;text-decoration:none}
-.list{list-style:none;padding:0}
-.list li{padding:14px 0;border-bottom:1px solid color-mix(in srgb,currentColor 15%,transparent)}
-.list a{display:flex;gap:14px;align-items:center;text-decoration:none;color:inherit}
-.list img,.list .ph{flex:none;width:76px;height:76px;border-radius:10px;object-fit:cover;background:color-mix(in srgb,var(--accent) 18%,transparent)}
-.list b{font-size:1.1em;color:var(--accent)}
-.list p{margin:.2em 0 0;opacity:.7;font-size:.9em}
-img.hero{width:100%;border-radius:12px;margin:.5em 0 1em}
+h1{font-size:1.8em;line-height:1.15;margin:.5em 0 .4em;text-wrap:balance}
+h2{font-size:.85em;text-transform:uppercase;letter-spacing:.08em;opacity:.65;margin:2em 0 .4em}
+h3{font-size:1.1em;margin:1.6em 0 .2em}
+.meta{opacity:.65;font-size:.85em;overflow-wrap:anywhere}
+.back{display:inline-flex;align-items:center;min-height:48px;padding:0 18px;border-radius:24px;background:var(--tint);font-weight:600;text-decoration:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:1em 0;padding:0;list-style:none}
+.chips li{padding:6px 14px;border-radius:999px;background:var(--tint);font-size:.85em;font-weight:600}
+.ing{list-style:none;padding:0;margin:0}
+.ing li{padding:12px 0;border-bottom:1px solid var(--line)}
+.steps{list-style:none;padding:0;margin:0;counter-reset:step}
+.steps li{position:relative;counter-increment:step;padding:16px 0 16px 56px;border-bottom:1px solid var(--line)}
+.steps li::before{content:counter(step);position:absolute;left:0;top:14px;width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:grid;place-items:center}
+.tip{border-left:4px solid var(--accent);padding:4px 0 4px 14px;margin:1.2em 0;opacity:.85}
+.list{list-style:none;padding:0;margin:0}
+.list li{border-bottom:1px solid var(--line)}
+.list a{display:flex;gap:16px;align-items:center;min-height:120px;padding:14px 0;text-decoration:none;color:inherit}
+.list img,.list .ph{flex:none;width:92px;height:92px;border-radius:14px;object-fit:cover;background:var(--tint)}
+.list b{font-size:1.15em;color:var(--accent)}
+.list p{margin:.2em 0 0;opacity:.7;font-size:.85em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hero{position:relative;margin:16px 0 20px;border-radius:20px;overflow:hidden;aspect-ratio:2/1;width:100%;background:var(--tint)}
+.hero img{display:block;width:100%;height:100%;object-fit:cover}
+.hero h1{position:absolute;left:0;right:0;bottom:0;margin:0;padding:72px 20px 16px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.8));text-shadow:0 1px 3px rgba(0,0,0,.5)}
 """
 
 
@@ -141,7 +152,7 @@ def page(r, slug, base):
             body.append(f"<h3>{e(name)}</h3>")
         elif kind == "step":
             if not ol_open:
-                body.append("<ol>")
+                body.append("<ol class='steps'>")
                 ol_open = True
             label = f"<strong>{e(name)}.</strong> " if name else ""
             body.append(f"<li>{label}{e(text)}</li>")
@@ -153,6 +164,12 @@ def page(r, slug, base):
     if ol_open:
         body.append("</ol>")
 
+    title = f"<h1>{e(r['name'])}</h1>"
+    header = (
+        f'<header class="hero"><img src="{e(hero)}" alt="">{title}</header>'
+        if hero
+        else title
+    )
     source = r.get("isBasedOn") or r.get("url")
     ld_json = json.dumps(r, indent=2, ensure_ascii=False).replace("</", "<\\/")
 
@@ -167,12 +184,11 @@ def page(r, slug, base):
 <style>{CSS}</style>
 </head><body>
 <a class="back" href="../">← All recipes</a>
-<h1>{e(r['name'])}</h1>
-{f'<img class="hero" src="{e(hero)}" alt="{e(r["name"])}">' if hero else ''}
+{header}
 {f"<p>{e(r['description'])}</p>" if r.get('description') else ''}
-<p class="meta">{' · '.join(meta)}</p>
+<ul class="chips">{''.join(f'<li>{m}</li>' for m in meta)}</ul>
 <h2>Ingredients</h2>
-<ul>{''.join(f'<li>{e(i)}</li>' for i in r['recipeIngredient'])}</ul>
+<ul class="ing">{''.join(f'<li>{e(i)}</li>' for i in r['recipeIngredient'])}</ul>
 <h2>Instructions</h2>
 {''.join(body)}
 {f'<p class="meta">Adapted from <a href="{e(source)}">{e(source)}</a></p>' if source else ''}
