@@ -203,6 +203,9 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips button{height:34px;padding:0 14px;border-radius:17px;border:0;background:var(--tint);color:var(--accent);font-weight:600;font-size:.82em}
 .chips button[aria-pressed=true]{background:var(--accent);color:#fff}
+.sheet .hint{margin:.5em 0 0;font-size:.74em;color:var(--muted)}
+.toast{position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:6000;width:max-content;max-width:calc(100% - 40px);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.26);padding:12px 18px;text-align:center;font:650 .95em/1.3 var(--sans);pointer-events:none}
+.toast small{display:block;margin-top:3px;font-weight:500;font-size:.86em;color:var(--muted)}
 /* motion */
 .fly{position:fixed;z-index:9000;pointer-events:none;perspective:1800px;transform-origin:50% 50%;will-change:transform;-webkit-box-reflect:below 6px linear-gradient(transparent 74%,rgba(255,255,255,.16))}
 :root.tween,:root.tween *,:root.tween *::before,:root.tween *::after{transition:background-color .45s cubic-bezier(.3,0,.2,1),color .45s cubic-bezier(.3,0,.2,1),border-color .45s,box-shadow .45s,fill .45s,stroke .45s,opacity .2s!important}
@@ -604,6 +607,7 @@ vbtn.addEventListener('click',()=>setView(!LV));
 function apply(){const set=(k,v)=>{if(v)root.dataset[k]=v;else delete root.dataset[k]};set('accent',st.accent);set('theme',st.theme);
 sheet.querySelectorAll('[data-accent]').forEach(b=>b.setAttribute('aria-pressed',String((st.accent||'')===b.dataset.accent)));
 sheet.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String((st.theme||'')===b.dataset.mode)));
+sheet.querySelectorAll('[data-shake]').forEach(b=>b.setAttribute('aria-pressed',String(!!st.shake===!!b.dataset.shake)));
 const F=st.filters;sheet.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cat?F.includes(b.dataset.cat):!F.length)));
 const had=new Set([...act.children].map(b=>b.dataset.c));act.innerHTML='';F.forEach(c=>{const b=document.createElement('button');b.className='clear';b.dataset.c=c;b.textContent=c;
 b.setAttribute('aria-label','Remove '+c+' filter');act.appendChild(b);if(!had.has(c)&&!reduce)b.animate([{transform:'scale(.6)',opacity:0},{transform:'none',opacity:1}],{duration:DUR,easing:EASE})})}
@@ -622,12 +626,36 @@ gear.addEventListener('click',e=>{e.stopPropagation();sheet.hidden?openSheet():c
 document.addEventListener('pointerdown',e=>{if(!sheet.hidden&&!sheet.contains(e.target)&&!gear.contains(e.target))closeSheet()});
 let tw;function themed(fn){if(reduce){fn();return}clearTimeout(tw);root.classList.add('tween');void root.offsetWidth;fn();tw=setTimeout(()=>root.classList.remove('tween'),520)}
 sheet.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if('shake' in b.dataset){if(!b.dataset.shake){st.shake=false;save();unlisten();apply();return}
+enableShake().then(ok=>{st.shake=ok;save();apply()});return}
 if('cat' in b.dataset){const c=b.dataset.cat,F=st.filters;st.filters=!c?[]:F.includes(c)?F.filter(x=>x!==c):[...F,c];save();apply();refilter();return}
 const k='accent' in b.dataset?'accent':'theme',v='accent' in b.dataset?b.dataset.accent:b.dataset.mode;if((st[k]||'')===v)return;
 themed(()=>{st[k]=v;save();apply()})});
 act.addEventListener('click',e=>{const b=e.target.closest('.clear');if(!b)return;st.filters=st.filters.filter(x=>x!==b.dataset.c);save();apply();refilter()});
 addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost').forEach(n=>n.remove());all.forEach(c=>c.style.opacity='');list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
 layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back()}});
+const quips=['Why are you shaking your HomeView?','Please put the HomeView down.','Shaken, not stirred.','That is not how timers work.','The recipes are fine. Are you?'];let nq=0,lastShake=0;
+function shook(){const now=Date.now();if(now-lastShake<2500||vis.length<2||!sheet.hidden||document.querySelector('.fly'))return;lastShake=now;
+let i=cur;while(i===cur)i=Math.floor(Math.random()*vis.length);
+document.querySelectorAll('.toast').forEach(n=>n.remove());const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');
+t.innerHTML='<span></span><small></small>';t.firstChild.textContent=quips[nq++%quips.length];t.lastChild.textContent='How about '+vis[i].querySelector('b').textContent+'?';document.body.appendChild(t);
+if(!reduce){(LV?list:stage).animate([0,-14,12,-9,6,-3,0].map(x=>({transform:'translateX('+x+'px)'})),{duration:520,easing:'ease-out'});
+t.animate([{opacity:0,transform:'translate(-50%,-12px) scale(.9)'},{opacity:1,transform:'translate(-50%,0)'}],{duration:DUR,easing:EASE})}
+setTimeout(()=>{if(!LV){go(i);return}const r=rowOf(vis[i].dataset.slug);if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})},reduce?0:380);
+setTimeout(()=>{if(reduce){t.remove();return}t.animate([{opacity:1},{opacity:0,transform:'translate(-50%,-8px)'}],{duration:260,fill:'forwards'}).onfinish=()=>t.remove();setTimeout(()=>t.remove(),700)},2800)}
+let spikes=[],pg=null,listening=false;
+function onMotion(e){const a=e.accelerationIncludingGravity;if(!a||a.x==null)return;
+if(pg){const d=Math.hypot(a.x-pg.x,a.y-pg.y,a.z-pg.z),now=performance.now();
+if(d>12){spikes=spikes.filter(s=>now-s<900);if(!spikes.length||now-spikes[spikes.length-1]>80)spikes.push(now);if(spikes.length>=3){spikes=[];shook()}}}
+pg={x:a.x,y:a.y,z:a.z}}
+function listen(){if(!listening){listening=true;addEventListener('devicemotion',onMotion)}}
+function unlisten(){listening=false;pg=null;removeEventListener('devicemotion',onMotion)}
+const hasMotion='DeviceMotionEvent' in window,needPerm=hasMotion&&typeof DeviceMotionEvent.requestPermission==='function';
+function enableShake(){if(!hasMotion)return Promise.resolve(false);if(!needPerm){listen();return Promise.resolve(true)}
+return DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted'){listen();return true}return false}).catch(()=>false)}
+if(!hasMotion)sheet.querySelector('.shakeopt').remove();
+else if(st.shake){listen();if(needPerm){const re=()=>{removeEventListener('touchend',re,true);removeEventListener('click',re,true);enableShake()};
+addEventListener('touchend',re,true);addEventListener('click',re,true)}}
 vstate();apply();if(LV){stage.classList.add('lv','lvd');list.hidden=false}layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back();
 })();
 """
@@ -756,6 +784,8 @@ def index(recipes):
 <section><h3>Theme colour</h3><div class="swatches">{swatches}</div></section>
 <section><h3>Appearance</h3><div class="seg">{modes}</div></section>
 <section><h3>Show</h3><div class="chips">{chips}</div></section>
+<section class="shakeopt"><h3>Shake for a surprise</h3><div class="seg"><button data-shake="" aria-pressed="true">Off</button><button data-shake="1" aria-pressed="false">On</button></div>
+<p class="hint">Shake the screen to land on a random recipe.</p></section>
 </div>
 <script>{FLOW_JS}</script>
 </body></html>
