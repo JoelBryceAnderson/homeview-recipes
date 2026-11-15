@@ -1,0 +1,56 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Chocolate Mousse Cake",
+  "description": "A no-bake cake of ladyfingers layered with rich semisweet chocolate mousse in a springform pan, chilled until set.",
+  "recipeCategory": "Dessert",
+  "recipeCuisine": "American",
+  "keywords": "chocolate, mousse, ladyfingers, no-bake, make-ahead",
+  "recipeYield": "12 servings",
+  "recipeIngredient": [
+    "3 (3-ounce) packages ladyfingers, split",
+    "1 cup sugar",
+    "1/2 cup whipping cream",
+    "1/4 cup butter or margarine",
+    "18 (1-ounce) semisweet chocolate squares, coarsely chopped",
+    "1 teaspoon vanilla extract",
+    "2 tablespoons hazelnut liqueur, optional",
+    "2 cups whipping cream, whipped",
+    "Chocolate leaves, for garnish (optional)"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Line the pan",
+      "text": "Line the bottom and sides of a 9-inch springform pan with split ladyfingers (from 3 packages), placing the cookies close together."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Cook the chocolate base",
+      "text": "Cook 1 cup sugar, 1/2 cup whipping cream and 1/4 cup butter in a heavy saucepan over medium heat, stirring constantly, 5 to 7 minutes or until the sugar dissolves. Add 18 ounces coarsely chopped semisweet chocolate, 1 teaspoon vanilla and, if desired, 2 tablespoons hazelnut liqueur, stirring until the chocolate melts. Remove from the heat and cool slightly."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Fold in whipped cream",
+      "text": "Fold 2 cups whipped whipping cream into the chocolate mixture."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Layer",
+      "text": "Pour one-third of the mixture into the prepared pan and top with half of the remaining ladyfingers. Repeat the layers, ending with the chocolate mixture."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Chill",
+      "text": "Chill at least 4 hours. Carefully remove the sides of the springform pan. Garnish with chocolate leaves, if desired."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Make ahead: cover and freeze up to 1 month, then thaw in the refrigerator 8 hours."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Chocolate: Ghirardelli semisweet chocolate squares were used."
+    }
+  ]
+}
