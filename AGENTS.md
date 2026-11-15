@@ -1,4 +1,4 @@
-# Recipes repo — instructions for Claude
+# Recipes repo — instructions for AI agents
 
 This repo turns recipes into web pages that Safari on Apple HomeView can open in
 its "Start Cooking" mode. HomeView reads schema.org `Recipe` JSON-LD from the page,
@@ -6,7 +6,7 @@ so each recipe lives as one JSON file and `build.py` wraps it in HTML.
 
 ## Adding a recipe
 
-When Joel sends a recipe (a URL, pasted text, or a photo):
+When the user sends a recipe (a URL, pasted text, or a photo):
 
 1. Write `recipes/<slug>.json`. The slug is lowercase-kebab-case from the dish name
    (`cabernet-cranberry-sauce`). It becomes the URL: `/<slug>/`.
@@ -26,13 +26,13 @@ When Joel sends a recipe (a URL, pasted text, or a photo):
      `totalTime` when known, plus `recipeYield`, `description` and `recipeCategory`.
    - If adapted from a web page, set `isBasedOn` to its URL. Don't copy the
      page's headnote or story; write a short `description` in your own words.
-   - Images: when Joel sends a photo, run `python3 add_image.py <slug> <photo>`.
+   - Images: when the user sends a photo, run `python3 add_image.py <slug> <photo>`.
      It resizes the photo, strips EXIF/GPS, saves `images/<slug>.jpg` and sets
      `image`. Otherwise `image` may be the source page's own image URL. Never
      invent one or pull in unrelated stock photos.
 3. Run `python3 build.py --check`. It must pass.
 4. Commit as `Add <dish name>` and push to `main`. GitHub Actions deploys to Pages.
-5. Give Joel the link: `https://<owner>.github.io/<repo>/<slug>/`.
+5. Give the user the link: `https://<owner>.github.io/<repo>/<slug>/`.
 
 ## Editing
 

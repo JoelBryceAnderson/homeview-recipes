@@ -23,10 +23,10 @@ recipes/deviled-eggs.json  →  https://<you>.github.io/homeview-recipes/deviled
 
 ## Add recipes
 
-**With Claude (easiest).** Connect the repo to Claude and send it a link,
-pasted text or a photo of a cookbook page with "add this to my recipes".
-`CLAUDE.md` tells Claude the format, how to check it and how to publish it, and
-it replies with the URL.
+**With an AI agent (easiest).** Connect the repo to a coding agent and send it a
+link, pasted text or a photo of a cookbook page with "add this to my recipes".
+`AGENTS.md` tells the agent the format, how to check it and how to publish it,
+and it replies with the URL.
 
 **By hand.**
 
