@@ -22,6 +22,8 @@ td:first-child{color:var(--muted);width:44%;padding-right:8px}
 button{height:38px;padding:0 16px;border:0;border-radius:19px;background:var(--accent);color:#fff;font:600 14px/1 -apple-system,system-ui,sans-serif}
 button.alt{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .big{font-size:26px;font-weight:700;text-align:center;padding:4px 0}
+#qr{margin-top:10px;text-align:center}.qrbox{display:inline-block;background:#fff;padding:12px;border-radius:12px}.qrbox svg{display:block;width:min(78vw,78vh,420px);height:auto}
+pre{white-space:pre-wrap;word-break:break-word;font-size:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
 #msg{color:var(--muted);font-size:13px;min-height:1.3em;margin-top:6px}
 </style>
 </head><body>
@@ -31,9 +33,11 @@ button.alt{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5
 <button id="bMotion">Allow motion</button>
 <button id="bWake" class="alt">Test wake lock</button>
 <button id="bSensor" class="alt">Test sensors</button>
-<button id="bCopy">Copy report</button>
+<button id="bQR">Send to phone</button>
+<button id="bCopy" class="alt">Copy report</button>
 </div>
 <div id="msg"></div>
+<div id="qr" hidden><div class="qrbox"></div><p class="sub">Scan with your iPhone camera. It opens this report on your phone, where you can copy it.</p></div>
 
 <h2>Motion (live)</h2>
 <div class="card"><div class="big" id="shakes">Shakes: 0</div><table data-s="motion"></table></div>
@@ -45,10 +49,11 @@ button.alt{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5
 <h2>Screen &amp; display</h2><div class="card"><table data-s="screen"></table></div>
 <h2>Device &amp; browser</h2><div class="card"><table data-s="device"></table></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 const R={};const $=id=>document.getElementById(id);
 const f=v=>v==null?'—':typeof v==='number'?(Number.isInteger(v)?String(v):v.toFixed(2)):String(v);
-function set(sec,key,val,cls){(R[sec]=R[sec]||{})[key]=val;const t=document.querySelector('[data-s="'+sec+'"]');let tr=[...t.rows].find(r=>r.dataset.k===key);
+function set(sec,key,val,cls){(R[sec]=R[sec]||{})[key]=val;const t=document.querySelector('[data-s="'+sec+'"]');if(!t)return;let tr=[...t.rows].find(r=>r.dataset.k===key);
  if(!tr){tr=t.insertRow();tr.dataset.k=key;tr.insertCell().textContent=key;tr.insertCell()}const c=tr.cells[1];c.textContent=typeof val==='boolean'?(val?'yes':'no'):f(val);
  c.className=cls||(val===true?'ok':val===false?'bad':'')}
 const msg=t=>{$('msg').textContent=t};
@@ -167,6 +172,25 @@ $('bSensor').onclick=()=>{msg('Starting sensors…');['Accelerometer','Gyroscope
   s.onerror=e=>set('sensors',k+' test',(e.error&&e.error.name)+': '+(e.error&&e.error.message),'bad');s.start();
   setTimeout(()=>{if(!got)set('sensors',k+' test','no readings','warn')},3000)}
  catch(e){set('sensors',k+' test',e.name+': '+e.message,'bad')}})};
+
+// hand-off: report in the URL hash, shown as a QR code
+const b64u=b=>btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64u=t=>Uint8Array.from(atob(t.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+async function pack(o){const txt=JSON.stringify(o);if(typeof CompressionStream==='undefined')return 'p'+encodeURIComponent(txt);
+ const buf=await new Response(new Blob([txt]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();return 'z'+b64u(new Uint8Array(buf))}
+async function unpack(t){if(t[0]==='p')return decodeURIComponent(t.slice(1));
+ return new Response(new Blob([unb64u(t.slice(1))]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()}
+$('bQR').onclick=async()=>{if(typeof qrcode==='undefined'){msg('QR library did not load.');return}
+ const base=location.origin+location.pathname+'#r=';let o={when:new Date().toISOString(),...R},svg=null;
+ for(const drop of [[],['feat'],['feat','perms'],['feat','perms','screen']]){drop.forEach(k=>delete o[k]);
+  try{const q=qrcode(0,'L');q.addData(base+await pack(o));q.make();svg=q.createSvgTag({cellSize:4,margin:0,scalable:true});break}catch(_){}}
+ if(!svg){msg('Report too big for a QR code.');return}
+ $('qr').querySelector('.qrbox').innerHTML=svg;$('qr').hidden=false;msg('');$('qr').scrollIntoView({behavior:'smooth',block:'center'})};
+if(location.hash.startsWith('#r=')){unpack(location.hash.slice(3)).then(txt=>{let pretty=txt;try{pretty=JSON.stringify(JSON.parse(txt),null,1)}catch(_){}
+ document.body.innerHTML='<h1>Probe report</h1><p class="sub">Received from another device.</p><div class="btns"><button id="cp">Copy report</button></div><div id="msg"></div><pre></pre>';
+ document.querySelector('pre').textContent=pretty;
+ $('cp').onclick=async()=>{try{await navigator.clipboard.writeText(pretty);msg('Copied.')}catch(_){const r=document.createRange();r.selectNodeContents(document.querySelector('pre'));getSelection().removeAllRanges();getSelection().addRange(r);msg('Selected. Use Copy.')}}})
+ .catch(e=>{document.body.innerHTML='<h1>Probe report</h1><p class="sub">Could not read this report: '+e.message+'</p>'})}
 
 // copy
 $('bCopy').onclick=async()=>{const txt=JSON.stringify({when:new Date().toISOString(),...R},null,1);

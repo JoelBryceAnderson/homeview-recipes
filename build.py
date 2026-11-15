@@ -635,7 +635,7 @@ document.addEventListener('pointerdown',e=>{pairs.forEach(([sh,btn])=>{if(!sh.hi
 let tw;function themed(fn){if(reduce){fn();return}clearTimeout(tw);root.classList.add('tween');void root.offsetWidth;fn();tw=setTimeout(()=>root.classList.remove('tween'),520)}
 const onSheet=e=>{const b=e.target.closest('button');if(!b)return;
 if('shake' in b.dataset){if(!b.dataset.shake){st.shake=false;save();unlisten();apply();return}
-enableShake().then(ok=>{st.shake=ok;save();apply()});return}
+enableShake().then(ok=>{if(!ok){st.shake=false;save();apply();toast('Motion access is off.','Allow it in Safari settings to use this.');return}verify()});return}
 if('cat' in b.dataset){const c=b.dataset.cat,F=st.filters;st.filters=!c?[]:F.includes(c)?F.filter(x=>x!==c):[...F,c];save();apply();refilter();return}
 if(!('accent' in b.dataset)&&!('mode' in b.dataset))return;
 const k='accent' in b.dataset?'accent':'theme',v='accent' in b.dataset?b.dataset.accent:b.dataset.mode;if((st[k]||'')===v)return;
@@ -655,7 +655,7 @@ toast(quips[nq++%quips.length],'How about '+vis[i].querySelector('b').textConten
 if(!reduce)(LV?list:stage).animate([0,-14,12,-9,6,-3,0].map(x=>({transform:'translateX('+x+'px)'})),{duration:520,easing:'ease-out'});
 setTimeout(()=>{if(!LV){go(i);return}const r=rowOf(vis[i].dataset.slug);if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})},reduce?0:380)}
 let spikes=[],pg=null,listening=false;
-function onMotion(e){const g=e.accelerationIncludingGravity,a=g&&g.x!=null?g:e.acceleration;if(!a||a.x==null)return;
+let mc=0;function onMotion(e){const g=e.accelerationIncludingGravity,a=g&&g.x!=null?g:e.acceleration;if(!a||a.x==null)return;mc++;
 if(pg){const d=Math.hypot(a.x-pg.x,a.y-pg.y,a.z-pg.z),now=performance.now();
 if(d>7){spikes=spikes.filter(s=>now-s<900);if(!spikes.length||now-spikes[spikes.length-1]>80)spikes.push(now);if(spikes.length>=3){spikes=[];shook()}}}
 pg={x:a.x,y:a.y,z:a.z}}
@@ -664,9 +664,12 @@ function unlisten(){listening=false;pg=null;removeEventListener('devicemotion',o
 const hasMotion='DeviceMotionEvent' in window,needPerm=hasMotion&&typeof DeviceMotionEvent.requestPermission==='function',egg=sheet.querySelector('.shakeopt');
 function enableShake(){if(!hasMotion)return Promise.resolve(false);if(!needPerm){listen();return Promise.resolve(true)}
 return DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted'){listen();return true}return false}).catch(()=>false)}
-egg.hidden=!(st.egg||st.shake);
+egg.hidden=!(st.egg||st.shake)||!!st.noMotion;
+function verify(){const c0=mc;st.shake=true;save();apply();setTimeout(()=>{if(mc>c0){toast('Shake away.','Give it a good jiggle.',2000);return}
+unlisten();st.shake=false;st.noMotion=true;save();apply();toast('This screen can’t feel a thing.','No motion sensor here, so no shaking.');
+if(reduce){egg.hidden=true;return}egg.animate([{opacity:1},{opacity:0,transform:'scale(.96)'}],{duration:260,easing:EASE}).onfinish=()=>{egg.hidden=true}},2000)}
 let taps=0,tapT=0;sheet.querySelector('.ver').addEventListener('click',()=>{if(!egg.hidden)return;const now=Date.now();taps=now-tapT<1500?taps+1:1;tapT=now;
-if(taps>=10){taps=0;if(!hasMotion){toast('This screen can’t feel a thing.','No motion sensor here.');return}st.egg=true;save();egg.hidden=false;toast('You found a secret.','Shake for a surprise is now in settings.');
+if(taps>=10){taps=0;if(!hasMotion||st.noMotion){toast('This screen can’t feel a thing.','No motion sensor here.');return}st.egg=true;save();egg.hidden=false;toast('You found a secret.','Shake for a surprise is now in settings.');
 if(!reduce)egg.animate([{opacity:0,transform:'translateY(-8px) scale(.96)'},{opacity:1,transform:'none'}],{duration:DUR,easing:EASE})}
 else if(taps>=6)toast((10-taps)+' more…',null,900)});
 if(hasMotion&&st.shake){listen();if(needPerm){const re=()=>{removeEventListener('touchend',re,true);removeEventListener('click',re,true);enableShake()};
