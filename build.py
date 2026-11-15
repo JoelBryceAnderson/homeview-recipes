@@ -539,26 +539,26 @@ function geom(){const r=bar.getBoundingClientRect(),k=knob.getBoundingClientRect
 return LV?{v:1,x:r.left+r.width/2,a:r.top,b:r.bottom,k:k.top+k.height/2,kl:k.height}:{v:0,y:r.top+r.height/2,a:r.left,b:r.right,k:k.left+k.width/2,kl:k.width}}
 // the bar's track and knob slide along one path: the bottom edge, round the bottom-right corner, up the right edge
 let rfin=null;
-// the rail: one path along the bottom edge, round a 40px corner and up the right edge. Where a bar runs past the
-// start of the corner, that stretch (the overhang) is drawn as its own straight piece that shrinks away at the start
-// or grows back at the end, so the bar keeps its full length in both views and the last frame matches it exactly.
-// The rail is measured a frame after the switch, once the new view has laid out
+// the rail: the bar slides along one path, the bottom edge, round a 40px corner and up the right edge, redrawn every
+// frame. The corner reshapes as it goes: at the start it is tight and sits just past the starting bar's end, it
+// opens to a full 40px curve while the bar is going round it, and it tightens again just past the ending bar's end,
+// so both bars keep their full length, nothing leaves the screen, and there's no jump at either end. The rail is measured a frame after the switch, once the new view has laid out
 function rail(g0,g1){if(reduce||g0.v===g1.v){bar.style.opacity='';return}const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,
-cl=(t,a,b)=>Math.max(a,Math.min(b,t)),R=Math.max(0,Math.min(40,(y-v.a)*.4,(xv-x0)*.4)),
-oh=Math.max(0,h.b-(xv-R)),ov=Math.max(0,v.b-(y-R)),hb=h.b-oh,vb=v.b-ov,
-h0=xv-R-x0,sv=h0+Math.PI*R/2,sH=x=>x<=xv-R?x-x0:h0+R*Math.asin(cl((x-xv+R)/(R||1),0,1)),sV=q=>q<=y-R?sv+(y-R-q):h0+R*Math.acos(cl((q-y+R)/(R||1),0,1)),d='M'+x0+' '+y+'H'+(xv-R)+'A'+R+' '+R+' 0 0 0 '+xv+' '+(y-R)+'V'+Math.min(v.a,y-R),
-tr=[[sH(h.a)+2,sH(hb)-(oh?0:2)],[sV(vb)+(ov?0:2),sV(v.a)-2]],kh=[h.kl/2-3,v.kl/2-3],
-kn=[Math.min(sH(h.k),sH(hb)-kh[0]),Math.max(sV(v.k),sV(vb)+kh[1])],s=document.createElementNS('http://www.w3.org/2000/svg','svg');
-s.setAttribute('class','rail');s.innerHTML='<path class="t" d="'+d+'"/><path class="t" d="M'+hb+' '+y+'H'+(h.b-2)+'"/><path class="t" d="M'+xv+' '+vb+'V'+(v.b-2)+'"/><path class="k" d="'+d+'"/>';document.body.appendChild(s);
-const[pt,ph,pv,pk]=s.children,i=g0.v?1:0,j=1-i,seg=(a,b)=>({strokeDasharray:Math.max(0,b-a).toFixed(1)+'px 100000px',strokeDashoffset:(-a).toFixed(1)+'px'}),o={duration:DUR+200,easing:EASE,fill:'forwards'},
-// an overhang of length L: full and shrinking over the first 30% if it belongs to the starting view, growing over the last 30% if to the ending one
-over=(el,L,starts)=>{if(L<=2){el.remove();return}const on={strokeDasharray:L+'px 100000px',opacity:1},off={strokeDasharray:'0px 100000px',opacity:0};
-el.animate(starts?[{...on,offset:0,easing:'ease-in'},{...off,offset:.3},{...off,offset:1}]:[{...off,offset:0},{...off,offset:.7,easing:'ease-out'},{...on,offset:1}],{duration:o.duration,fill:'forwards'})};
-over(ph,oh-2,i===0);over(pv,ov-2,i===1);
-bar.style.opacity='0';pt.animate([seg(...tr[i]),seg(...tr[j])],o);const an=pk.animate([seg(kn[i]-kh[i],kn[i]+kh[i]),seg(kn[j]-kh[j],kn[j]+kh[j])],o);
-let done=false;const f=rfin=()=>{if(done)return;done=true;rfin=null;s.remove();bar.style.opacity=''};
-an.onfinish=()=>{if(done)return;bar.style.opacity='';bar.animate([{opacity:0},{opacity:1}],{duration:120,easing:'ease-out'});s.animate([{opacity:1},{opacity:0}],{duration:120,easing:'ease-out',fill:'forwards'}).onfinish=f};
-setTimeout(f,DUR+900)}
+R=Math.max(0,Math.min(40,(y-v.a)*.4,(xv-x0)*.4)),cl=(t,a,b)=>Math.max(a,Math.min(b,t)),lerp=(a,b,t)=>a+(b-a)*t,
+Xh=Math.max(xv,h.b+2),Yv=Math.max(y,v.b+2),Rh=Math.min(R,Xh-h.b-2),Rv=Math.min(R,Yv-v.b-2),i=g0.v?1:0,
+kh=[h.kl/2-3,v.kl/2-3],ms=DUR+200,ez=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2,
+s=document.createElementNS('http://www.w3.org/2000/svg','svg');
+s.setAttribute('class','rail');s.innerHTML='<path class="t"/><path class="k"/>';document.body.appendChild(s);const[pt,pk]=s.children;
+const dash=(el,a,b)=>{el.style.strokeDasharray=Math.max(0,b-a).toFixed(1)+'px 100000px';el.style.strokeDashoffset=(-a).toFixed(1)+'px'};
+function frame(p){const e=ez(p),q=i?1-e:e,X=lerp(Xh,xv,q),Y=lerp(y,Yv,q),hy=Y,
+r=R-(R-Rh)*Math.pow(Math.max(0,1-q/.35),2)-(R-Rv)*Math.pow(Math.max(0,(q-.65)/.35),2),h0=X-r-x0,sv=h0+Math.PI*r/2,sH=x=>x<=X-r?x-x0:h0+r*Math.asin(cl((x-X+r)/(r||1),0,1)),sV=t=>t<=Y-r?sv+(Y-r-t):h0+r*Math.acos(cl((t-Y+r)/(r||1),0,1)),
+d='M'+x0+' '+hy+'H'+(X-r)+'A'+r+' '+r+' 0 0 0 '+X+' '+(Y-r)+'V'+Math.min(v.a,Y-r);pt.setAttribute('d',d);pk.setAttribute('d',d);
+const H=[sH(h.a)+2,sH(h.b)-2],V=[sV(v.b)+2,sV(v.a)-2],A=i?V:H,B=i?H:V;dash(pt,lerp(A[0],B[0],e),lerp(A[1],B[1],e));
+const kc=lerp(i?sV(v.k):sH(h.k),i?sH(h.k):sV(v.k),e),kk=lerp(kh[i],kh[1-i],e);dash(pk,kc-kk,kc+kk)}
+bar.style.opacity='0';frame(0);let done=false,raf=0;const t0=performance.now();
+const f=rfin=()=>{if(done)return;done=true;rfin=null;cancelAnimationFrame(raf);s.remove();bar.style.opacity=''};
+const tick=t=>{if(done)return;const p=Math.min(1,(t-t0)/ms);frame(p);if(p<1)raf=requestAnimationFrame(tick);else f()};raf=requestAnimationFrame(tick);
+setTimeout(f,ms+700)}
 function setView(v){if(v===LV)return;if(vfin)vfin();if(rfin)rfin();const g0=geom();LV=v;if(LV)st.view='list';else delete st.view;save();if(!reduce)bar.style.opacity='0';(LV?toList:toCovers)();requestAnimationFrame(()=>requestAnimationFrame(()=>{if(LV===v)rail(g0,geom())}))}
 // covers -> list: the centre cover shrinks into its row's thumbnail while the rest of the flow falls away and rows cascade in
 function toList(){stop();const c=vis[cur],r0=c&&c.getBoundingClientRect(),R=stage.getBoundingClientRect(),
