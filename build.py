@@ -479,11 +479,13 @@ const ax=e=>LV?e.clientY:e.clientX,edge=()=>{const r=strip.getBoundingClientRect
 // opening ripples out from the letter under the finger; closing folds the far letters in first, towards the chosen one
 function ripple(opening){const as=[...strip.querySelectorAll('a')],i0=Math.max(0,as.indexOf(strip.querySelector('a.on'))),m=Math.max(i0,as.length-1-i0);
 as.forEach((a,i)=>{const k=Math.abs(i-i0);a.style.setProperty('--d',(opening?k*12:(m-k)*6)+'ms')})}
-// list view: the bar is an ordinary scroll bar; drag anywhere along it and the knob follows the finger
-function lseek(y){const len=strip.getBoundingClientRect().height,kn=knob.offsetWidth,max=list.scrollHeight-list.clientHeight;
-const f=Math.max(0,Math.min(1,(y-edge()-kn/2)/Math.max(1,len-kn)));list.scrollTop=f*max;lknob()}
+// list view: the bar is an ordinary scroll bar. Grab the knob and it stays under your finger; press the track and
+// the knob centres there. Measured on the bar itself (the letter strip is hidden in this view, so its box is empty)
+let grab=0;const blen=()=>bar.clientWidth,btop=()=>bar.getBoundingClientRect().top,kpos=()=>knob.getBoundingClientRect().top-btop();
+function lseek(y){const kn=knob.offsetWidth,max=list.scrollHeight-list.clientHeight,f=Math.max(0,Math.min(1,(y-btop()-grab)/Math.max(1,blen()-kn)));
+list.scrollTop=f*max;lknob()}
 bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);try{bar.setPointerCapture(e.pointerId)}catch(_){}
-if(LV){bar.classList.add('drag');lseek(ax(e));return}pick(ax(e));
+if(LV){bar.classList.add('drag');const kn=knob.offsetWidth,o=ax(e)-btop()-kpos();grab=o>=-8&&o<=kn+8?Math.max(0,Math.min(kn,o)):kn/2;lseek(ax(e));return}pick(ax(e));
 if(!bar.classList.contains('open')){ripple(true);bar.classList.add('open')}if(!reduce)mag(ax(e))});
 bar.addEventListener('pointermove',e=>{if(!down)return;if(LV){lseek(ax(e));return}pick(ax(e));if(!reduce)mag(ax(e))});
 const end=()=>{if(!down)return;down=false;if(bar.classList.contains('drag')){bar.classList.remove('drag');return}unmag();clearTimeout(timer);timer=setTimeout(()=>{ripple(false);bar.classList.remove('open')},650)};
