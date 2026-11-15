@@ -212,7 +212,7 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .sheet .ver{margin:14px 0 0;text-align:center;font-size:.7em;color:var(--muted);font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .sheet section[hidden]{display:none}
 /* motion */
-.fly{position:fixed;z-index:9000;pointer-events:none;perspective:1800px;transform-origin:50% 50%;-webkit-box-reflect:below 6px linear-gradient(transparent 74%,rgba(255,255,255,.16))}
+.fly{position:fixed;z-index:9000;pointer-events:none;perspective:1800px;transform-origin:50% 50%}
 :root.tween,:root.tween *,:root.tween *::before,:root.tween *::after{transition:background-color .45s cubic-bezier(.3,0,.2,1),color .45s cubic-bezier(.3,0,.2,1),border-color .45s,box-shadow .45s,fill .45s,stroke .45s,opacity .2s!important}
 .flip{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
 .face{position:absolute;inset:0;overflow:hidden;border-radius:18px;-webkit-backface-visibility:hidden;backface-visibility:hidden}
@@ -523,12 +523,13 @@ o.faces.forEach(x=>x.animate(fr.map(f=>({borderRadius:f.borderRadius,offset:f.of
 let fin=false;const f=()=>{if(fin)return;fin=true;done()};
 o.flip.animate([{transform:'rotateY('+r0+'deg)'},{transform:'rotateY('+r1+'deg)'}],opt).onfinish=f;setTimeout(f,FDUR+400)}
 function open(el){ss.set('hv-pos',el.dataset.slug);const href=el.getAttribute('href');if(reduce){location.href=href;return}
-ss.set('hv-open','1');const o=fly(el);el.style.opacity='0';morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
+ss.set('hv-open','1');const o=fly(el);el.animate([{opacity:1},{opacity:0}],{duration:200,easing:'ease-out',fill:'forwards'});morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
 function back(){const slug=ss.get('hv-back'),y=+ss.get('hv-y')||0;ss.set('hv-back',null);ss.set('hv-y',null);setTimeout(()=>ss.set('hv-mini',null),0);if(!slug||reduce)return;
 if(LV){const r=rowOf(slug);if(!r||r.hidden)return;const th=r.querySelector('.th'),o=fly(coverOf(slug),th.getBoundingClientRect(),10,true,y);th.style.opacity='0';
 morph(o,full(),o.r,180,0,innerHeight*.06,()=>{th.style.opacity='';o.d.remove()});return}
 const el=vis.find(c=>c.dataset.slug===slug);if(!el)return;
-const o=fly(el,null,0,false,y);el.style.opacity='0';morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()})}
+const o=fly(el,null,0,false,y);el.style.opacity='0';setTimeout(()=>{el.style.opacity='';el.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-in'})},Math.max(0,FDUR-200));
+morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()})}
 flow.addEventListener('click',e=>{if(anyOpen())return;const el=document.elementsFromPoint(e.clientX,e.clientY).find(n=>n.classList&&n.classList.contains('cover'));
 if(!el)return;e.preventDefault();const i=vis.indexOf(el);if(i===cur)open(el);else go(i)});
 addEventListener('keydown',e=>{if(anyOpen()){if(e.key==='Escape')closeSheet();return}if(LV)return;
@@ -652,7 +653,7 @@ const k='accent' in b.dataset?'accent':'theme',v='accent' in b.dataset?b.dataset
 themed(()=>{st[k]=v;save();apply()})};
 sheet.addEventListener('click',onSheet);fsheet.addEventListener('click',onSheet);
 act.addEventListener('click',e=>{const b=e.target.closest('.clear');if(!b)return;st.filters=st.filters.filter(x=>x!==b.dataset.c);save();apply();refilter()});
-addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost').forEach(n=>n.remove());all.forEach(c=>c.style.opacity='');list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
+addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost').forEach(n=>n.remove());all.forEach(c=>{c.getAnimations().forEach(a=>a.cancel());c.style.opacity=''});list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
 layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back()}});
 vstate();apply();if(LV){stage.classList.add('lv','lvd');list.hidden=false}layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back();
 })();
