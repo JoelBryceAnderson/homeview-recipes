@@ -121,7 +121,7 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .cover.pic .cap{background:linear-gradient(rgba(0,0,0,.45),transparent 30%,transparent 48%,rgba(0,0,0,.72))}
 .cap i{font:700 calc(var(--s)*.042)/1.2 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.16em;opacity:.85}
 .cap b{font:800 calc(var(--s)*.1)/1.03 var(--display);letter-spacing:-.025em;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 8px rgba(0,0,0,.18)}
-.mark{position:absolute;left:50%;top:calc(45% + var(--s)/2 + 18px);width:34px;height:34px;margin-left:-17px;border-radius:17px;display:grid;place-items:center;background:var(--accent);color:#fff;font:700 .85em/1 var(--sans);pointer-events:none;z-index:1500}
+.mark{position:absolute;left:50%;top:calc(45% - var(--s)/2 - 24px);width:40px;margin-left:-20px;text-align:center;font:600 .78em/1 var(--sans);letter-spacing:.04em;color:var(--muted);pointer-events:none;will-change:transform,opacity}
 .flow{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;z-index:3000;-webkit-overflow-scrolling:touch}
 .flow::-webkit-scrollbar{display:none}
 .track{position:relative;height:100%}
@@ -340,7 +340,7 @@ let vis=[],pos=[],marks=[],S=1,step=1,cur=-1,anim=0,down=false,timer,picked='';
 const X=o=>{const a=Math.abs(o),n=Math.min(a,1);return Math.sign(o)*(S*.66*Math.sqrt(n)+Math.max(a-1,0)*S*.19)};
 
 function layout(slug){
-S=probe.offsetWidth||250;step=S*.55;
+S=Math.max(120,Math.round(Math.min(290,stage.clientHeight*.62,stage.clientWidth*.62)));stage.style.setProperty('--s',S+'px');step=S*.55;
 const F=st.filters;vis=all.filter(c=>!F.length||F.includes(c.dataset.cat));if(!vis.length){st.filters=[];vis=all.slice()}
 all.forEach(c=>{c.hidden=!vis.includes(c)});
 marks.forEach(m=>m.remove());marks=[];pos=[];let p=0,prev=null;
@@ -358,7 +358,7 @@ function render(){const f=flow.scrollLeft/step;let best=0,bd=1e9;
 vis.forEach((c,i)=>{const o=pos[i]-f,a=Math.abs(o),n=Math.min(a,1);
 c.style.transform='translateX('+X(o).toFixed(1)+'px) perspective(1100px) translateZ('+(-n*170).toFixed(1)+'px) rotateY('+(-Math.sign(o)*n*64).toFixed(2)+'deg)';
 c.style.zIndex=1000-Math.round(a*100);c.style.visibility=a>7?'hidden':'';if(a<bd){bd=a;best=i}});
-marks.forEach(m=>{const o=m._p-f;m.style.transform='translateX('+X(o).toFixed(1)+'px)';m.style.opacity=Math.max(0,1-Math.abs(o)*.32).toFixed(2)});
+marks.forEach(m=>{const o=m._p-f;m.style.transform='translateX('+X(o).toFixed(1)+'px)';m.style.opacity=Math.max(0,1-Math.abs(o)*.42).toFixed(2)});
 const max=flow.scrollWidth-flow.clientWidth;knob.style.transform='translateX('+((max>0?flow.scrollLeft/max:0)*(bar.clientWidth-knob.offsetWidth)).toFixed(1)+'px)';
 if(best!==cur){cur=best;where.textContent=(cur+1)+' of '+vis.length;ss.set('hv-pos',vis[cur].dataset.slug);if(!down){const L=vis[cur].dataset.letter;[...strip.children].forEach(a=>a.classList.toggle('on',a.dataset.l===L))}}}
 
@@ -370,7 +370,7 @@ if(!c.hidden&&o){if(o.t!==t)c.animate([{transform:o.t},{transform:t}],{duration:
 else if(!c.hidden)c.animate([{transform:t+off,opacity:0},{transform:t,opacity:1}],{duration:DUR,delay:90,easing:EASE,fill:'backwards'});
 else if(o){c.hidden=false;c.style.transform=o.t;c.style.zIndex=o.z;let gone=false;const fin=()=>{if(gone||vis.includes(c))return;gone=true;c.hidden=true;c.getAnimations().forEach(a=>a.cancel())};
 c.animate([{transform:o.t,opacity:1},{transform:o.t+off,opacity:0}],{duration:220,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).onfinish=fin;setTimeout(fin,500)}});
-marks.forEach(m=>m.animate([{opacity:0},{opacity:+m.style.opacity||1}],{duration:260,delay:120,fill:'backwards'}))}
+marks.forEach(m=>m.animate([{opacity:0},{opacity:+m.style.opacity||0}],{duration:260,delay:120,fill:'backwards'}))}
 function stop(){if(anim){cancelAnimationFrame(anim);anim=0;flow.style.scrollSnapType=''}}
 function go(i){if(i<0||i>=vis.length)return;const from=flow.scrollLeft,d=pos[i]*step-from;if(Math.abs(d)<1)return;stop();
 if(reduce){flow.scrollLeft=from+d;render();return}
