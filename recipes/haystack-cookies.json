@@ -1,0 +1,35 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Haystack Cookies",
+  "description": "No-bake chocolate peanut butter oatmeal cookies, boiled briefly on the stove and dropped by spoonfuls to set.",
+  "recipeCategory": "Dessert",
+  "recipeCuisine": "American",
+  "keywords": "no-bake cookies, oatmeal, chocolate, peanut butter",
+  "recipeIngredient": [
+    "2 cups sugar",
+    "1/2 cup milk",
+    "4 tbsp cocoa",
+    "1 stick butter",
+    "1/2 cup peanut butter",
+    "2 1/2 cups oatmeal",
+    "2 tsp vanilla"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Cook the base",
+      "text": "Cook 2 cups sugar, 1/2 cup milk, 1 stick butter and 4 tbsp cocoa together for 1 1/2 minutes. After it boils, remove from the heat."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Stir in the rest",
+      "text": "Quickly add 1/2 cup peanut butter, 2 1/2 cups oatmeal and 2 tsp vanilla."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Shape and cool",
+      "text": "Drop by spoonfuls onto waxed paper. Let cool."
+    }
+  ]
+}
