@@ -18,6 +18,7 @@ ROOT = Path(__file__).parent
 SRC = ROOT / "recipes"
 IMAGES = ROOT / "images"
 OUT = ROOT / "_site"
+VERSION = "1.5"
 
 
 def site_url():
@@ -110,8 +111,8 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .clear{flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px 0 12px;border-radius:15px;border:0;background:var(--accent);color:#fff;font-weight:600;font-size:.78em}
 .clear[hidden]{display:none}
 .clear::after{content:"×";font-size:1.3em;line-height:0}
-.gear,.view{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:22px;border:0;background:var(--tint);color:var(--accent);transition:transform .25s cubic-bezier(.2,.9,.3,1.3)}
-.gear:active,.view:active{transform:scale(.88)}
+.gear,.view,.fbtn{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:22px;border:0;background:var(--tint);color:var(--accent);transition:transform .25s cubic-bezier(.2,.9,.3,1.3)}
+.gear:active,.view:active,.fbtn:active{transform:scale(.88)}
 /* view toggle icon: three bars (list) that morph into a little coverflow (covers). It shows the view you'll switch to. */
 .ic{position:relative;width:24px;height:24px;perspective:36px}
 .ic span{position:absolute;left:3px;width:18px;height:3px;border-radius:1.5px;background:currentColor;transition-property:left,top,width,height,border-radius,transform;transition-duration:.5s;transition-timing-function:cubic-bezier(.3,1.35,.45,1)}
@@ -203,6 +204,10 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips button{height:34px;padding:0 14px;border-radius:17px;border:0;background:var(--tint);color:var(--accent);font-weight:600;font-size:.82em}
 .chips button[aria-pressed=true]{background:var(--accent);color:#fff}
+.fbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.fbtn.on{background:var(--accent);color:#fff}
+.sheet .ver{margin:14px 0 0;text-align:center;font-size:.7em;color:var(--muted);font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.sheet section[hidden]{display:none}
 .sheet .hint{margin:.5em 0 0;font-size:.74em;color:var(--muted)}
 .toast{position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:6000;width:max-content;max-width:calc(100% - 40px);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.26);padding:12px 18px;text-align:center;font:650 .95em/1.3 var(--sans);pointer-events:none}
 .toast small{display:block;margin-top:3px;font-weight:500;font-size:.86em;color:var(--muted)}
@@ -394,7 +399,7 @@ if(!Array.isArray(st.filters))st.filters=st.filter?[st.filter]:[];delete st.filt
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}};
 const stage=document.querySelector('.stage'),flow=stage.querySelector('.flow'),track=flow.querySelector('.track'),probe=stage.querySelector('.probe'),
 all=[...stage.querySelectorAll('.cover')],bar=document.querySelector('.scrub'),knob=bar.querySelector('.knob'),strip=bar.querySelector('.letters'),
-sheet=document.querySelector('.sheet'),gear=document.querySelector('.gear'),act=document.querySelector('.active'),where=document.querySelector('.where'),
+sheet=document.querySelector('.sheet.settings'),fsheet=document.querySelector('.sheet.filt'),gear=document.querySelector('.gear'),fbtn=document.querySelector('.fbtn'),act=document.querySelector('.active'),where=document.querySelector('.where'),
 list=stage.querySelector('.list'),rows=[...list.querySelectorAll('.row')],heads=[...list.querySelectorAll('.lh')],vbtn=document.querySelector('.view');
 let vis=[],pos=[],marks=[],S=1,step=1,cur=-1,anim=0,down=false,timer,picked='',LV=st.view==='list',lrows=[],lset=-1,vfin=null;
 // offset of a cover from centre: a clear gap beside the front cover, then even spacing for the stack
@@ -513,9 +518,9 @@ if(LV){const r=rowOf(slug);if(!r||r.hidden)return;const th=r.querySelector('.th'
 morph(o,full(),o.r,180,0,innerHeight*.06,()=>{th.style.opacity='';o.d.remove()});return}
 const el=vis.find(c=>c.dataset.slug===slug);if(!el)return;
 const o=fly(el);el.style.opacity='0';morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()})}
-flow.addEventListener('click',e=>{if(!sheet.hidden)return;const el=document.elementsFromPoint(e.clientX,e.clientY).find(n=>n.classList&&n.classList.contains('cover'));
+flow.addEventListener('click',e=>{if(anyOpen())return;const el=document.elementsFromPoint(e.clientX,e.clientY).find(n=>n.classList&&n.classList.contains('cover'));
 if(!el)return;e.preventDefault();const i=vis.indexOf(el);if(i===cur)open(el);else go(i)});
-addEventListener('keydown',e=>{if(!sheet.hidden){if(e.key==='Escape')closeSheet();return}if(LV)return;
+addEventListener('keydown',e=>{if(anyOpen()){if(e.key==='Escape')closeSheet();return}if(LV)return;
 if(e.key==='ArrowRight')go(cur+1);else if(e.key==='ArrowLeft')go(cur-1);else if(e.key==='Enter'&&vis[cur]&&!e.target.closest('a,button'))open(vis[cur])});
 all.forEach(c=>c.addEventListener('click',e=>{e.preventDefault();open(c)}));
 
@@ -531,7 +536,7 @@ function place(slug){const r=rowOf(slug);if(!r||r.hidden)return;list.scrollTop=r
 let lq=0;list.addEventListener('scroll',()=>{if(!lq)lq=requestAnimationFrame(()=>{lq=0;lscroll()})},{passive:true});
 function openRow(row){const s=row.dataset.slug,href=row.getAttribute('href');ss.set('hv-pos',s);if(reduce){location.href=href;return}
 ss.set('hv-open','1');const th=row.querySelector('.th'),o=fly(coverOf(s),th.getBoundingClientRect(),10,true);th.style.opacity='0';morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
-list.addEventListener('click',e=>{const r=e.target.closest('.row');if(!r)return;e.preventDefault();if(sheet.hidden)openRow(r)});
+list.addEventListener('click',e=>{const r=e.target.closest('.row');if(!r)return;e.preventDefault();if(!anyOpen())openRow(r)});
 function ghost(c,r){const d=document.createElement('div');d.className='ghost front'+(c.classList.contains('pic')?' pic':'');
 d.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px';
 [...c.children].forEach(n=>{if(n.tagName!=='TEMPLATE')d.appendChild(n.cloneNode(true))});document.body.appendChild(d);return d}
@@ -605,56 +610,66 @@ if(d)kill[0].onfinish=f;setTimeout(f,d?DUR+400:340)}
 vbtn.addEventListener('click',()=>setView(!LV));
 
 function apply(){const set=(k,v)=>{if(v)root.dataset[k]=v;else delete root.dataset[k]};set('accent',st.accent);set('theme',st.theme);
-sheet.querySelectorAll('[data-accent]').forEach(b=>b.setAttribute('aria-pressed',String((st.accent||'')===b.dataset.accent)));
-sheet.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String((st.theme||'')===b.dataset.mode)));
-sheet.querySelectorAll('[data-shake]').forEach(b=>b.setAttribute('aria-pressed',String(!!st.shake===!!b.dataset.shake)));
-const F=st.filters;sheet.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cat?F.includes(b.dataset.cat):!F.length)));
+document.querySelectorAll('.sheet [data-accent]').forEach(b=>b.setAttribute('aria-pressed',String((st.accent||'')===b.dataset.accent)));
+document.querySelectorAll('.sheet [data-mode]').forEach(b=>b.setAttribute('aria-pressed',String((st.theme||'')===b.dataset.mode)));
+document.querySelectorAll('.sheet [data-shake]').forEach(b=>b.setAttribute('aria-pressed',String(!!st.shake===!!b.dataset.shake)));
+const F=st.filters;document.querySelectorAll('.sheet [data-cat]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cat?F.includes(b.dataset.cat):!F.length)));
+fbtn.classList.toggle('on',F.length>0);
 const had=new Set([...act.children].map(b=>b.dataset.c));act.innerHTML='';F.forEach(c=>{const b=document.createElement('button');b.className='clear';b.dataset.c=c;b.textContent=c;
 b.setAttribute('aria-label','Remove '+c+' filter');act.appendChild(b);if(!had.has(c)&&!reduce)b.animate([{transform:'scale(.6)',opacity:0},{transform:'none',opacity:1}],{duration:DUR,easing:EASE})})}
-function openSheet(){apply();sheet.hidden=false;gear.setAttribute('aria-expanded','true');if(reduce)return;
-const g=gear.getBoundingClientRect(),s=sheet.getBoundingClientRect(),ox=s.width-22,oy=22,dx=g.left+g.width/2-(s.left+ox),dy=g.top+g.height/2-(s.top+oy),N=12,fr=[];
+const pairs=[[sheet,gear],[fsheet,fbtn]],btnOf=s=>pairs.find(p=>p[0]===s)[1],anyOpen=()=>pairs.some(p=>!p[0].hidden);
+function openSheet(sh){pairs.forEach(p=>{if(p[0]!==sh)closeSheet(p[0])});apply();sh.hidden=false;const btn=btnOf(sh);btn.setAttribute('aria-expanded','true');if(reduce)return;
+const g=btn.getBoundingClientRect(),s=sh.getBoundingClientRect(),ox=Math.min(s.width-22,g.left+g.width/2-s.left),oy=22,dx=g.left+g.width/2-(s.left+ox),dy=g.top+g.height/2-(s.top+oy),N=12,fr=[];
 for(let k=0;k<=N;k++){const t=k/N,u=1-t,x=u*u*dx+2*u*t*dx*.15,y=u*u*dy+2*u*t*(dy*.9),sc=.1+.9*t;
 fr.push({transform:'translate('+(x).toFixed(1)+'px,'+(y).toFixed(1)+'px) scale('+sc.toFixed(3)+')',borderRadius:(44-26*t)+'px',offset:t})}
-sheet.style.transformOrigin=ox+'px '+oy+'px';sheet.animate(fr,{duration:DUR,easing:EASE});
-sheet.animate([{opacity:0},{opacity:1}],{duration:140});
-[...sheet.children].forEach((n,i)=>n.animate([{opacity:0,transform:'translateY(-10px)'},{opacity:1,transform:'none'}],{duration:DUR,delay:60+i*45,easing:EASE,fill:'backwards'}))}
-function closeSheet(){if(sheet.hidden)return;gear.setAttribute('aria-expanded','false');if(reduce){sheet.hidden=true;return}
-const g=gear.getBoundingClientRect(),s=sheet.getBoundingClientRect(),ox=s.width-22,oy=22,dx=g.left+g.width/2-(s.left+ox),dy=g.top+g.height/2-(s.top+oy);
-sheet.animate([{transform:'none',opacity:1},{transform:'translate('+dx*.6+'px,'+dy*.2+'px) scale(.55)',opacity:.6,offset:.6},{transform:'translate('+dx+'px,'+dy+'px) scale(.1)',opacity:0}],
-{duration:230,easing:'cubic-bezier(.4,0,.8,.4)'}).onfinish=()=>{sheet.hidden=true};setTimeout(()=>{sheet.hidden=true},400)}
-gear.addEventListener('click',e=>{e.stopPropagation();sheet.hidden?openSheet():closeSheet()});
-document.addEventListener('pointerdown',e=>{if(!sheet.hidden&&!sheet.contains(e.target)&&!gear.contains(e.target))closeSheet()});
+sh.style.transformOrigin=ox+'px '+oy+'px';sh.animate(fr,{duration:DUR,easing:EASE});
+sh.animate([{opacity:0},{opacity:1}],{duration:140});
+[...sh.children].forEach((n,i)=>n.animate([{opacity:0,transform:'translateY(-10px)'},{opacity:1,transform:'none'}],{duration:DUR,delay:60+i*45,easing:EASE,fill:'backwards'}))}
+function closeSheet(sh){if(!sh){pairs.forEach(p=>closeSheet(p[0]));return}if(sh.hidden)return;const btn=btnOf(sh);btn.setAttribute('aria-expanded','false');if(reduce){sh.hidden=true;return}
+const g=btn.getBoundingClientRect(),s=sh.getBoundingClientRect(),ox=Math.min(s.width-22,g.left+g.width/2-s.left),oy=22,dx=g.left+g.width/2-(s.left+ox),dy=g.top+g.height/2-(s.top+oy);
+sh.style.transformOrigin=ox+'px '+oy+'px';
+sh.animate([{transform:'none',opacity:1},{transform:'translate('+dx*.6+'px,'+dy*.2+'px) scale(.55)',opacity:.6,offset:.6},{transform:'translate('+dx+'px,'+dy+'px) scale(.1)',opacity:0}],
+{duration:230,easing:'cubic-bezier(.4,0,.8,.4)'}).onfinish=()=>{sh.hidden=true};setTimeout(()=>{sh.hidden=true},400)}
+pairs.forEach(([sh,btn])=>btn.addEventListener('click',e=>{e.stopPropagation();sh.hidden?openSheet(sh):closeSheet(sh)}));
+document.addEventListener('pointerdown',e=>{pairs.forEach(([sh,btn])=>{if(!sh.hidden&&!sh.contains(e.target)&&!btn.contains(e.target))closeSheet(sh)})});
 let tw;function themed(fn){if(reduce){fn();return}clearTimeout(tw);root.classList.add('tween');void root.offsetWidth;fn();tw=setTimeout(()=>root.classList.remove('tween'),520)}
-sheet.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+const onSheet=e=>{const b=e.target.closest('button');if(!b)return;
 if('shake' in b.dataset){if(!b.dataset.shake){st.shake=false;save();unlisten();apply();return}
 enableShake().then(ok=>{st.shake=ok;save();apply()});return}
 if('cat' in b.dataset){const c=b.dataset.cat,F=st.filters;st.filters=!c?[]:F.includes(c)?F.filter(x=>x!==c):[...F,c];save();apply();refilter();return}
+if(!('accent' in b.dataset)&&!('mode' in b.dataset))return;
 const k='accent' in b.dataset?'accent':'theme',v='accent' in b.dataset?b.dataset.accent:b.dataset.mode;if((st[k]||'')===v)return;
-themed(()=>{st[k]=v;save();apply()})});
+themed(()=>{st[k]=v;save();apply()})};
+sheet.addEventListener('click',onSheet);fsheet.addEventListener('click',onSheet);
 act.addEventListener('click',e=>{const b=e.target.closest('.clear');if(!b)return;st.filters=st.filters.filter(x=>x!==b.dataset.c);save();apply();refilter()});
 addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost').forEach(n=>n.remove());all.forEach(c=>c.style.opacity='');list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
 layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back()}});
+function toast(a,b2,ms){document.querySelectorAll('.toast').forEach(n=>n.remove());const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');
+t.innerHTML='<span></span>'+(b2?'<small></small>':'');t.firstChild.textContent=a;if(b2)t.lastChild.textContent=b2;document.body.appendChild(t);
+if(!reduce)t.animate([{opacity:0,transform:'translate(-50%,-12px) scale(.9)'},{opacity:1,transform:'translate(-50%,0)'}],{duration:DUR,easing:EASE});
+setTimeout(()=>{if(reduce){t.remove();return}t.animate([{opacity:1},{opacity:0,transform:'translate(-50%,-8px)'}],{duration:260,fill:'forwards'}).onfinish=()=>t.remove();setTimeout(()=>t.remove(),700)},ms||2800)}
 const quips=['Why are you shaking your HomeView?','Please put the HomeView down.','Shaken, not stirred.','That is not how timers work.','The recipes are fine. Are you?'];let nq=0,lastShake=0;
-function shook(){const now=Date.now();if(now-lastShake<2500||vis.length<2||!sheet.hidden||document.querySelector('.fly'))return;lastShake=now;
+function shook(){const now=Date.now();if(now-lastShake<2500||vis.length<2||anyOpen()||document.querySelector('.fly'))return;lastShake=now;
 let i=cur;while(i===cur)i=Math.floor(Math.random()*vis.length);
-document.querySelectorAll('.toast').forEach(n=>n.remove());const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');
-t.innerHTML='<span></span><small></small>';t.firstChild.textContent=quips[nq++%quips.length];t.lastChild.textContent='How about '+vis[i].querySelector('b').textContent+'?';document.body.appendChild(t);
-if(!reduce){(LV?list:stage).animate([0,-14,12,-9,6,-3,0].map(x=>({transform:'translateX('+x+'px)'})),{duration:520,easing:'ease-out'});
-t.animate([{opacity:0,transform:'translate(-50%,-12px) scale(.9)'},{opacity:1,transform:'translate(-50%,0)'}],{duration:DUR,easing:EASE})}
-setTimeout(()=>{if(!LV){go(i);return}const r=rowOf(vis[i].dataset.slug);if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})},reduce?0:380);
-setTimeout(()=>{if(reduce){t.remove();return}t.animate([{opacity:1},{opacity:0,transform:'translate(-50%,-8px)'}],{duration:260,fill:'forwards'}).onfinish=()=>t.remove();setTimeout(()=>t.remove(),700)},2800)}
+toast(quips[nq++%quips.length],'How about '+vis[i].querySelector('b').textContent+'?');
+if(!reduce)(LV?list:stage).animate([0,-14,12,-9,6,-3,0].map(x=>({transform:'translateX('+x+'px)'})),{duration:520,easing:'ease-out'});
+setTimeout(()=>{if(!LV){go(i);return}const r=rowOf(vis[i].dataset.slug);if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})},reduce?0:380)}
 let spikes=[],pg=null,listening=false;
-function onMotion(e){const a=e.accelerationIncludingGravity;if(!a||a.x==null)return;
+function onMotion(e){const g=e.accelerationIncludingGravity,a=g&&g.x!=null?g:e.acceleration;if(!a||a.x==null)return;
 if(pg){const d=Math.hypot(a.x-pg.x,a.y-pg.y,a.z-pg.z),now=performance.now();
-if(d>12){spikes=spikes.filter(s=>now-s<900);if(!spikes.length||now-spikes[spikes.length-1]>80)spikes.push(now);if(spikes.length>=3){spikes=[];shook()}}}
+if(d>7){spikes=spikes.filter(s=>now-s<900);if(!spikes.length||now-spikes[spikes.length-1]>80)spikes.push(now);if(spikes.length>=3){spikes=[];shook()}}}
 pg={x:a.x,y:a.y,z:a.z}}
 function listen(){if(!listening){listening=true;addEventListener('devicemotion',onMotion)}}
 function unlisten(){listening=false;pg=null;removeEventListener('devicemotion',onMotion)}
-const hasMotion='DeviceMotionEvent' in window,needPerm=hasMotion&&typeof DeviceMotionEvent.requestPermission==='function';
+const hasMotion='DeviceMotionEvent' in window,needPerm=hasMotion&&typeof DeviceMotionEvent.requestPermission==='function',egg=sheet.querySelector('.shakeopt');
 function enableShake(){if(!hasMotion)return Promise.resolve(false);if(!needPerm){listen();return Promise.resolve(true)}
 return DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted'){listen();return true}return false}).catch(()=>false)}
-if(!hasMotion)sheet.querySelector('.shakeopt').remove();
-else if(st.shake){listen();if(needPerm){const re=()=>{removeEventListener('touchend',re,true);removeEventListener('click',re,true);enableShake()};
+egg.hidden=!(st.egg||st.shake);
+let taps=0,tapT=0;sheet.querySelector('.ver').addEventListener('click',()=>{if(!egg.hidden)return;const now=Date.now();taps=now-tapT<1500?taps+1:1;tapT=now;
+if(taps>=10){taps=0;if(!hasMotion){toast('This screen can’t feel a thing.','No motion sensor here.');return}st.egg=true;save();egg.hidden=false;toast('You found a secret.','Shake for a surprise is now in settings.');
+if(!reduce)egg.animate([{opacity:0,transform:'translateY(-8px) scale(.96)'},{opacity:1,transform:'none'}],{duration:DUR,easing:EASE})}
+else if(taps>=6)toast((10-taps)+' more…',null,900)});
+if(hasMotion&&st.shake){listen();if(needPerm){const re=()=>{removeEventListener('touchend',re,true);removeEventListener('click',re,true);enableShake()};
 addEventListener('touchend',re,true);addEventListener('click',re,true)}}
 vstate();apply();if(LV){stage.classList.add('lv','lvd');list.hidden=false}layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back();
 })();
@@ -773,6 +788,7 @@ def index(recipes):
 <style>{CSS}</style>
 </head><body class="idx">
 <header class="masthead"><h1>Recipes</h1><div class="active" aria-label="Active filters"></div>
+<button class="fbtn" aria-label="Filter" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button>
 <button class="view" aria-label="Show as list"><span class="ic" aria-hidden="true"><span></span><span></span><span></span></span></button>
 <button class="gear" aria-label="Settings" aria-expanded="false">{GEAR_SVG}</button></header>
 <div class="stage"><span class="probe"></span>{''.join(cover(i, s, r) for i, (s, r) in enumerate(items))}
@@ -780,12 +796,15 @@ def index(recipes):
 <div class="list" hidden><div class="lw">{''.join(rows)}<p class="lcount"></p></div></div></div>
 <div class="where"><span class="wl" aria-hidden="true"></span><span class="wn" aria-live="polite"></span></div>
 <nav class="scrub" aria-label="Jump to letter"><span class="knob"></span><div class="letters"></div></nav>
-<div class="sheet" hidden role="dialog" aria-label="Settings">
+<div class="sheet filt" hidden role="dialog" aria-label="Filter">
+<section><h3>Dish type</h3><div class="chips">{chips}</div></section>
+</div>
+<div class="sheet settings" hidden role="dialog" aria-label="Settings">
 <section><h3>Theme colour</h3><div class="swatches">{swatches}</div></section>
 <section><h3>Appearance</h3><div class="seg">{modes}</div></section>
-<section><h3>Show</h3><div class="chips">{chips}</div></section>
-<section class="shakeopt"><h3>Shake for a surprise</h3><div class="seg"><button data-shake="" aria-pressed="true">Off</button><button data-shake="1" aria-pressed="false">On</button></div>
+<section class="shakeopt" hidden><h3>Shake for a surprise</h3><div class="seg"><button data-shake="" aria-pressed="true">Off</button><button data-shake="1" aria-pressed="false">On</button></div>
 <p class="hint">Shake the screen to land on a random recipe.</p></section>
+<p class="ver">Version {VERSION}</p>
 </div>
 <script>{FLOW_JS}</script>
 </body></html>
@@ -820,6 +839,8 @@ def main():
         shutil.copytree(IMAGES, OUT / "images")
     base = site_url()
     (OUT / "index.html").write_text(index(recipes))
+    (OUT / "probe").mkdir()
+    shutil.copy(ROOT / "probe.html", OUT / "probe" / "index.html")
     for slug, r in recipes:
         (OUT / slug).mkdir()
         (OUT / slug / "index.html").write_text(page(r, slug, base))
