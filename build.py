@@ -51,67 +51,70 @@ CSS = """
 @media (prefers-color-scheme:dark){:root{--paper:#000000;--card:#1c1c1e;--ink:#f5f5f7;--muted:#98989d;--accent:#ff6b7f;--line:#38383a;--tint:#2c1a1d;--shadow:none}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:var(--paper)}
-/* Sized for HomeView: a 7-inch square touch screen with rounded corners, read from arm's length. */
-body{font:19px/1.5 var(--sans);color:var(--ink);background:var(--paper);max-width:760px;margin:0 auto;padding:24px 28px 80px}
+/* Sized for HomeView: a 7-inch square touch screen with rounded corners. Keep it dense. */
+body{font:17px/1.45 var(--sans);color:var(--ink);background:var(--paper);max-width:760px;margin:0 auto;padding:16px 22px 48px}
 a{color:var(--accent)}
 h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.015em;text-wrap:balance}
-h1{font-weight:800;letter-spacing:-.025em}
-h1{font-size:2em;line-height:1.08;margin:.15em 0 .3em}
-h2{font-size:1.3em;margin:1.8em 0 .5em}
-h3{font-size:1.1em;margin:1.4em 0 .2em;color:var(--accent)}
-.kicker{font:700 .7em/1.2 var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin:0}
-.muted{color:var(--muted)}
-.back{display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 18px 0 14px;border-radius:24px;background:var(--tint);color:var(--ink);font-weight:600;text-decoration:none}
+h1{font-size:1.75em;line-height:1.08;font-weight:800;letter-spacing:-.025em;margin:.1em 0 .2em}
+h2{font-size:1.15em;margin:1.1em 0 .3em}
+h3{font-size:1em;margin:1em 0 .1em;color:var(--accent)}
+.kicker{font:700 .68em/1.2 var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin:0}
+.back{display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 16px 0 12px;border-radius:22px;background:var(--tint);color:var(--ink);font-weight:600;text-decoration:none}
 .back::before{content:"‹";font-size:1.5em;line-height:0;color:var(--accent);margin-top:-3px}
+/* typographic cover for recipes without a photo */
+.ph{display:flex!important;flex-direction:column;justify-content:space-between;padding:9%;color:#fff;text-align:left;background:radial-gradient(circle at 15% 0%,rgba(255,255,255,.2),transparent 55%),linear-gradient(160deg,var(--c2),var(--c1))}
+.ph i{font:700 calc(var(--s)*.042)/1.2 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.16em;opacity:.78}
+.ph b{font:800 calc(var(--s)*.105)/1.02 var(--display);letter-spacing:-.025em;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 /* recipe page */
-.head{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:start;margin:22px 0 8px}
-.head.noimg{grid-template-columns:1fr}
-.head .desc{margin:.2em 0 0;color:var(--muted);font-size:.95em}
-.photo{width:clamp(130px,34vw,220px);aspect-ratio:1;border-radius:14px;object-fit:cover;box-shadow:var(--shadow);display:block}
-.facts{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:18px 0 0;padding:14px 0 0;border-top:1px solid var(--line)}
-.facts div{padding:0 14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.head{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start;margin:12px 0 0}
+.head .desc{margin:.25em 0 0;color:var(--muted);font-size:.9em}
+.photo{width:clamp(96px,24vw,156px);aspect-ratio:1;border-radius:14px;object-fit:cover;box-shadow:var(--shadow);display:block}
+.facts{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--line)}
+.facts div{padding:0 12px}
 .facts div:first-child{padding-left:0}
 .facts div+div{border-left:1px solid var(--line)}
-.facts dt{font:700 .62em/1.4 var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
-.facts dd{margin:0;font:600 1em/1.3 var(--display)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:6px 24px 8px;margin:26px 0}
-.card h2{margin:.6em 0 0;padding-bottom:.35em;border-bottom:2px solid var(--accent)}
-.ing{list-style:none;padding:0;margin:0}
-.ing li{padding:11px 0;border-bottom:1px solid var(--line)}
-.ing li:last-child{border:0}
+.facts dt{font:700 .6em/1.4 var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.facts dd{margin:0;font:600 .95em/1.25 var(--display)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:2px 16px 4px;margin:14px 0}
+.card h2{margin:.55em 0 .1em;font-size:1em;color:var(--accent)}
+.ing{list-style:none;padding:0;margin:0;columns:2 170px;column-gap:28px}
+.ing li{padding:6px 0;border-top:1px solid var(--line);break-inside:avoid;font-size:.95em}
 .steps{list-style:none;padding:0;margin:0;counter-reset:step}
-.steps li{position:relative;counter-increment:step;padding:14px 0 16px 52px;border-bottom:1px solid var(--line)}
+.steps li{position:relative;counter-increment:step;padding:9px 0 10px 42px;border-bottom:1px solid var(--line)}
 .steps li:last-child{border:0}
-.steps li::before{content:counter(step);position:absolute;left:0;top:13px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font:700 .95em/1 var(--display);font-variant-numeric:tabular-nums}
+.steps li::before{content:counter(step);position:absolute;left:0;top:9px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font:700 .8em/1 var(--display);font-variant-numeric:tabular-nums}
 .steps strong{font-family:var(--display);font-weight:650}
-.tip{background:var(--tint);border-radius:12px;padding:14px 18px;margin:16px 0}
+.tip{background:var(--tint);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:.92em}
 .tip b{display:block;font:700 .66em/1.6 var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--accent)}
-.source{font-size:.8em;color:var(--muted);overflow-wrap:anywhere}
-/* index */
-.idx{padding-right:64px}
-.masthead{margin:8px 0 6px}
-.masthead h1{font-size:2.4em;margin:0;letter-spacing:-.03em}
-.masthead p{margin:.2em 0 0;color:var(--muted)}
-.group{margin:0}
-.letter{position:sticky;top:0;z-index:1;margin:0;padding:14px 0 6px;background:var(--paper);font-size:1.5em;color:var(--accent);border-bottom:2px solid var(--accent)}
-.list{list-style:none;padding:0;margin:0 0 8px}
-.list li{border-bottom:1px solid var(--line)}
-.list li:last-child{border:0}
-.list a{display:flex;gap:18px;align-items:center;min-height:116px;padding:14px 0;text-decoration:none;color:inherit}
-.list img,.list .ph{flex:none;width:86px;height:86px;border-radius:12px;object-fit:cover;background:var(--tint);box-shadow:var(--shadow)}
-.list .ph{display:grid;place-items:center;font:700 2.1em/1 var(--display);color:var(--accent);box-shadow:none}
-.list b{display:block;font:700 1.15em/1.2 var(--display);margin:.15em 0}
-.list .sub{font-size:.8em;color:var(--muted)}
-.scrub{position:fixed;top:50%;right:max(10px,calc(50vw - 380px + 6px));transform:translateY(-50%);display:flex;flex-direction:column;justify-content:space-between;height:min(calc(100vh - 72px),620px);width:44px;padding:8px 0;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);touch-action:none;user-select:none;-webkit-user-select:none;z-index:2}
-.scrub a,.scrub span{display:block;text-align:center;font:700 .7em/1 var(--sans);text-decoration:none;flex:1;display:grid;place-items:center}
-.scrub span{color:var(--muted);opacity:.4}
-.scrub a.on{color:var(--card);background:var(--accent);border-radius:8px;margin:0 6px}
+.source{font-size:.78em;color:var(--muted);overflow-wrap:anywhere}
 .mini{position:fixed;top:0;left:0;right:0;z-index:5;background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .22s ease;visibility:hidden}
 .mini.show{transform:none;visibility:visible}
-.mini div{max-width:760px;margin:0 auto;padding:10px 28px;display:flex;align-items:center;gap:14px}
-.mini .back{flex:none;padding:0 14px 0 12px}
-.mini img{flex:none;width:44px;height:44px;border-radius:9px;object-fit:cover}
-.mini b{font:700 1.05em/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mini div{max-width:760px;margin:0 auto;padding:8px 22px;display:flex;align-items:center;gap:12px}
+.mini .back{flex:none}
+.mini .thumb{flex:none;width:40px;height:40px;border-radius:9px;object-fit:cover;overflow:hidden}
+.mini b{font:700 1em/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* index: cover flow */
+body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:14px 0 12px;display:flex;flex-direction:column}
+.masthead{display:flex;align-items:baseline;gap:10px;padding:0 22px}
+.masthead h1{font-size:1.6em;margin:0}
+.masthead p{margin:0;color:var(--muted);font-size:.85em}
+.flow{--s:min(250px,46vh,58vw);flex:1;min-height:0;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 calc(50% - var(--s)/2);position:relative;-webkit-overflow-scrolling:touch}
+.flow::-webkit-scrollbar{display:none}
+.cover{flex:none;width:var(--s);height:var(--s);margin:0 calc(var(--s)*-.3);scroll-snap-align:center;text-decoration:none;border-radius:18px;overflow:hidden;display:block;background:var(--card);box-shadow:0 10px 30px rgba(0,0,0,.18);transform-origin:50% 50%;will-change:transform;-webkit-box-reflect:below 6px linear-gradient(transparent 70%,rgba(255,255,255,.18))}
+.cover img,.cover .ph{width:100%;height:100%;object-fit:cover;display:grid}
+.cover:first-child{margin-left:0}.cover:last-child{margin-right:0}
+.now{text-align:center;padding:0 22px;min-height:3.2em}
+.now b{display:block;font:700 1.2em/1.2 var(--display);letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now span{font-size:.8em;color:var(--muted)}
+.scrub{position:relative;align-self:center;width:min(520px,calc(100% - 44px));height:44px;margin-top:6px;touch-action:none;user-select:none;-webkit-user-select:none}
+.scrub::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:var(--line);transition:opacity .2s}
+.scrub .knob{position:absolute;top:50%;left:0;width:56px;height:6px;margin-top:-3px;border-radius:3px;background:var(--muted);transition:opacity .2s}
+.scrub .letters{position:absolute;inset:0;display:flex;justify-content:space-evenly;align-items:center;padding:0 6px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.14);opacity:0;transform:scale(.96);transition:opacity .18s,transform .18s;pointer-events:none}
+.scrub.open .letters{opacity:1;transform:none}
+.scrub.open .knob,.scrub.open::before{opacity:0}
+.scrub .letters a{display:grid;place-items:center;min-width:32px;height:32px;border-radius:16px;font:700 .85em/1 var(--sans);text-decoration:none;color:var(--accent)}
+.scrub .letters a.on{background:var(--accent);color:#fff}
 """
 
 
@@ -167,6 +170,29 @@ def validate(slug, r):
     return errs
 
 
+COVER_COLORS = [  # muted two-tone gradients for photo-less covers
+    ("#3a3f58", "#6a7194"), ("#5b3a46", "#94606f"), ("#2f4a43", "#557f71"),
+    ("#6b4a2f", "#a87b52"), ("#7a2e36", "#b3555f"), ("#2f4459", "#5f7f9c"),
+    ("#4a3d6b", "#7966a6"), ("#7d5419", "#c08b3d"),
+]
+
+
+def art(r, src, cls="", lazy=False, n=None):
+    """The recipe's photo; on the index, a typographic cover when it has none."""
+    if src:
+        return f'<img class="{cls}" src="{e(src)}" alt=""{" loading=lazy" if lazy else ""}>'
+    if cls:  # recipe page and sticky bar: no photo, no image
+        return ""
+    n = sum(map(ord, r["name"])) if n is None else n
+    c1, c2 = COVER_COLORS[n % len(COVER_COLORS)]
+    cat = r.get("recipeCategory")
+    cat = cat[0] if isinstance(cat, list) else cat
+    return (
+        f'<span class="ph" style="--c1:{c1};--c2:{c2}" aria-hidden="true">'
+        f'<i>{e(cat or "Recipe")}</i><b>{e(r["name"])}</b></span>'
+    )
+
+
 def page(r, slug, base):
     r = {"@context": "https://schema.org", **r}
     imgs = images_of(r)
@@ -212,11 +238,11 @@ def page(r, slug, base):
         if facts
         else ""
     )
-    header = f"""<header class="head{'' if hero else ' noimg'}"><div>
+    header = f"""<header class="head"><div>
 {f'<p class="kicker">{e(cat)}</p>' if cat else ''}
 <h1>{e(r['name'])}</h1>
 {f'<p class="desc">{e(r["description"])}</p>' if r.get('description') else ''}
-</div>{f'<img class="photo" src="{e(hero)}" alt="">' if hero else ''}</header>
+</div>{art(r, hero, "photo")}</header>
 {facts_html}"""
     source = r.get("isBasedOn") or r.get("url")
     ld_json = json.dumps(r, indent=2, ensure_ascii=False).replace("</", "<\\/")
@@ -231,7 +257,7 @@ def page(r, slug, base):
 </script>
 <style>{CSS}</style>
 </head><body>
-<nav class="mini" aria-hidden="true"><div><a class="back" href="../" tabindex="-1">Recipes</a>{f'<img src="{e(hero)}" alt="">' if hero else ''}<b>{e(r['name'])}</b></div></nav>
+<nav class="mini" aria-hidden="true"><div><a class="back" href="../" tabindex="-1">Recipes</a>{art(r, hero, "thumb")}<b>{e(r['name'])}</b></div></nav>
 <a class="back" href="../">Recipes</a>
 {header}
 <section class="card"><h2>Ingredients</h2>
@@ -244,17 +270,32 @@ def page(r, slug, base):
 """
 
 
-SCRUB_JS = """
-(()=>{const bar=document.querySelector('.scrub');if(!bar)return;
-const links=[...bar.querySelectorAll('a')];let cur;
-function go(y){let best=null,d=1e9;for(const a of links){const r=a.getBoundingClientRect(),m=Math.abs(r.top+r.height/2-y);if(m<d){d=m;best=a}}
-if(best&&best!==cur){cur=best;const t=document.querySelector(best.getAttribute('href'));window.scrollTo({top:t.getBoundingClientRect().top+scrollY,behavior:'instant'});links.forEach(l=>l.classList.toggle('on',l===best))}}
-let down=false;
-bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;try{bar.setPointerCapture(e.pointerId)}catch(_){}go(e.clientY)});
-bar.addEventListener('pointermove',e=>{if(down)go(e.clientY)});
-bar.addEventListener('pointercancel',()=>{down=false});
-bar.addEventListener('pointerup',()=>{down=false;setTimeout(()=>{links.forEach(l=>l.classList.remove('on'));cur=null},400)});
-bar.addEventListener('click',e=>e.preventDefault());})();
+FLOW_JS = """
+(()=>{const flow=document.querySelector('.flow');if(!flow)return;
+const covers=[...flow.children],now=document.querySelector('.now'),bar=document.querySelector('.scrub'),
+knob=bar.querySelector('.knob'),links=[...bar.querySelectorAll('a')];
+let cur=-1,timer,down=false,raf=0;
+function center(i,smooth){const c=covers[i];flow.scrollTo({left:c.offsetLeft+c.offsetWidth/2-flow.clientWidth/2,behavior:smooth?'smooth':'instant'})}
+function render(){raf=0;const mid=flow.scrollLeft+flow.clientWidth/2;let best=0,bd=1e9;
+covers.forEach((c,i)=>{const o=(c.offsetLeft+c.offsetWidth/2-mid)/c.offsetWidth,a=Math.max(-1,Math.min(1,o*2)),d=Math.min(Math.abs(o),3);
+c.style.transform='perspective(900px) translateZ('+(-Math.min(d,1)*120-d*20)+'px) rotateY('+(-a*62)+'deg)';c.style.zIndex=100-Math.round(d*10);
+if(Math.abs(o)<bd){bd=Math.abs(o);best=i}});
+const max=flow.scrollWidth-flow.clientWidth,p=max>0?flow.scrollLeft/max:0;
+knob.style.transform='translateX('+p*(bar.clientWidth-knob.offsetWidth)+'px)';
+if(best!==cur){cur=best;const c=covers[best];now.innerHTML='<b></b><span></span>';now.firstChild.textContent=c.dataset.name;now.lastChild.textContent=c.dataset.sub;
+const L=c.dataset.letter;links.forEach(l=>l.classList.toggle('on',l.dataset.l===L))}}
+const queue=()=>{if(!raf)raf=requestAnimationFrame(render)};
+function open(){bar.classList.add('open');clearTimeout(timer);timer=setTimeout(()=>{if(!down)bar.classList.remove('open')},1200)}
+flow.addEventListener('scroll',()=>{queue();open()},{passive:true});addEventListener('resize',queue);
+covers.forEach((c,i)=>c.addEventListener('click',e=>{if(i!==cur){e.preventDefault();center(i,true)}}));
+addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&cur<covers.length-1)center(cur+1,true);if(e.key==='ArrowLeft'&&cur>0)center(cur-1,true);if(e.key==='Enter')location.href=covers[cur].href});
+function go(x){let best=null,d=1e9;links.forEach(a=>{const r=a.getBoundingClientRect(),m=Math.abs(r.left+r.width/2-x);if(m<d){d=m;best=a}});
+const i=covers.findIndex(c=>c.dataset.letter===best.dataset.l);if(i>=0&&i!==cur){center(i,false);cancelAnimationFrame(raf);render()}}
+bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;try{bar.setPointerCapture(e.pointerId)}catch(_){}open();go(e.clientX)});
+bar.addEventListener('pointermove',e=>{if(down)go(e.clientX)});
+const end=()=>{down=false;open()};bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);
+bar.addEventListener('click',e=>e.preventDefault());
+render();})();
 """
 
 
@@ -270,34 +311,28 @@ def letter_of(name):
 
 
 def index(recipes):
-    def item(slug, r):
+    items = sorted(recipes, key=lambda x: x[1]["name"].lower())
+
+    def cover(i, slug, r):
         imgs = images_of(r)
-        thumb = (
-            f'<img src="{e(imgs[0])}" alt="" loading="lazy">'
-            if imgs
-            else f'<span class="ph">{e(letter_of(r["name"]))}</span>'
-        )
         cat = r.get("recipeCategory")
         cat = cat[0] if isinstance(cat, list) else cat
-        total = fmt_duration(r.get("totalTime"))
-        sub = " · ".join(x for x in (cat, total) if x)
-        sub_html = f'<span class="sub">{e(sub)}</span>' if sub else ""
-        return f'<li><a href="{slug}/"><span>{thumb}</span><span><b>{e(r["name"])}</b>{sub_html}</span></a></li>'
+        sub = " · ".join(x for x in (cat, fmt_duration(r.get("totalTime"))) if x)
+        return (
+            f'<a class="cover" href="{slug}/" data-name="{e(r["name"])}" data-sub="{e(sub)}" '
+            f'data-letter="{letter_of(r["name"])}" aria-label="{e(r["name"])}">'
+            f'{art(r, imgs[0] if imgs else None, lazy=True, n=i)}</a>'
+        )
 
-    groups = {}
-    for slug, r in sorted(recipes, key=lambda x: x[1]["name"].lower()):
-        groups.setdefault(letter_of(r["name"]), []).append((slug, r))
-    order = sorted(groups, key=lambda L: (L == "#", L))
-    sections = "".join(
-        f'<section class="group" id="L-{L if L != "#" else "0"}"><h2 class="letter">{L}</h2>'
-        f'<ul class="list">{"".join(item(s_, r) for s_, r in groups[L])}</ul></section>'
-        for L in order
-    )
-    letters = [chr(c) for c in range(ord("A"), ord("Z") + 1)] + (["#"] if "#" in groups else [])
-    scrub = "".join(
-        f'<a href="#L-{L if L != "#" else "0"}">{L}</a>' if L in groups else f"<span>{L}</span>"
-        for L in letters
-    )
+    letters = []
+    for _, r in items:
+        L = letter_of(r["name"])
+        if L not in letters:
+            letters.append(L)
+    letters.sort(key=lambda L: (L == "#", L))
+    scrub = '<span class="knob"></span><div class="letters">' + "".join(
+        f'<a href="#" data-l="{L}">{L}</a>' for L in letters
+    ) + "</div>"
     n = len(recipes)
     return f"""<!DOCTYPE html>
 <html lang="en"><head>
@@ -306,10 +341,11 @@ def index(recipes):
 <title>Recipes</title>
 <style>{CSS}</style>
 </head><body class="idx">
-<header class="masthead"><h1>Recipes</h1><p>{n} recipe{'s' if n != 1 else ''}, A to Z</p></header>
-{sections}
+<header class="masthead"><h1>Recipes</h1><p>{n} recipe{'s' if n != 1 else ''}</p></header>
+<div class="flow">{''.join(cover(i, s, r) for i, (s, r) in enumerate(items))}</div>
+<div class="now" aria-live="polite"></div>
 <nav class="scrub" aria-label="Jump to letter">{scrub}</nav>
-<script>{SCRUB_JS}</script>
+<script>{FLOW_JS}</script>
 </body></html>
 """
 
