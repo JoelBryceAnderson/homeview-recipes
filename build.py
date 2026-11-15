@@ -74,7 +74,9 @@ h3{font-size:1em;margin:1em 0 .1em;color:var(--accent)}
 .back{display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 16px 0 12px;border-radius:22px;background:var(--tint);color:var(--ink);font-weight:600;text-decoration:none}
 .back::before{content:"‹";font-size:1.5em;line-height:0;color:var(--accent);margin-top:-3px}
 /* recipe page */
-.head{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start;margin:12px 0 0}
+.head{display:grid;grid-template-columns:1fr;gap:18px;align-items:start;margin:12px 0 0}
+.head:has(.photo){grid-template-columns:auto 1fr}
+.head .photo{order:-1}
 .head .desc{margin:.25em 0 0;color:var(--muted);font-size:.9em}
 .photo{width:clamp(96px,24vw,156px);aspect-ratio:1;border-radius:14px;object-fit:cover;box-shadow:var(--shadow);display:block}
 .facts{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--line)}
@@ -216,6 +218,8 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 :root.tween,:root.tween *,:root.tween *::before,:root.tween *::after{transition:background-color .45s cubic-bezier(.3,0,.2,1),color .45s cubic-bezier(.3,0,.2,1),border-color .45s,box-shadow .45s,fill .45s,stroke .45s,opacity .2s!important}
 .flip{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
 .face{position:absolute;inset:0;overflow:hidden;border-radius:18px;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.zoom{position:fixed;inset:0;z-index:9000;pointer-events:none}
+.zoom .zbg{position:absolute;inset:0;background:var(--paper)}
 .fly .sh{position:absolute;inset:0;pointer-events:none}
 .front{color:#fff;background:var(--card)}
 .front img,.front .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
@@ -545,8 +549,7 @@ Promise.all(ims.map(i=>i.decode?i.decode().catch(()=>{}):0)).then(play);setTimeo
 function open(el){ss.set('hv-pos',el.dataset.slug);const href=el.getAttribute('href');if(reduce){location.href=href;return}
 ss.set('hv-open','1');const o=fly(el);el.animate([{opacity:1},{opacity:0}],{duration:200,easing:'ease-out',fill:'forwards'});morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
 function back(){const slug=ss.get('hv-back'),y=+ss.get('hv-y')||0;ss.set('hv-back',null);ss.set('hv-y',null);setTimeout(()=>ss.set('hv-mini',null),0);if(!slug||reduce)return;
-if(LV){const r=rowOf(slug);if(!r||r.hidden)return;const th=r.querySelector('.th'),o=fly(coverOf(slug),th.getBoundingClientRect(),10,true,y);th.style.opacity='0';
-morph(o,full(),o.r,180,0,innerHeight*.06,()=>{th.style.opacity='';o.d.remove()});return}
+if(LV){const r=rowOf(slug);if(!r||r.hidden)return;lift(r,false,y,(d,th)=>{th.style.opacity='';d.remove()});return}
 const el=vis.find(c=>c.dataset.slug===slug);if(!el)return;
 const o=fly(el,null,0,false,y);el.style.opacity='0';
 morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()},()=>{el.style.opacity='';el.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-in'})})}
@@ -566,8 +569,35 @@ function lscroll(){lknob();if(Math.abs(list.scrollTop-lset)<1)return;lset=-1;con
 if(i>=0&&i!==cur){cur=i;setWhere();ss.set('hv-pos',vis[cur].dataset.slug);if(!down&&!bar.classList.contains('mag'))sync()}}
 function place(slug){const r=rowOf(slug);if(!r||r.hidden)return;list.scrollTop=r.offsetTop-hh();lset=list.scrollTop;lknob()}
 let lq=0;list.addEventListener('scroll',()=>{if(!lq)lq=requestAnimationFrame(()=>{lq=0;lscroll()})},{passive:true});
+// list view: no flip. The row's thumbnail grows into the header photo and its kicker and title slide into the page's,
+// while the rest of the page fades in over the list. Going back runs it in reverse (from the sticky bar if it was showing).
+function lift(row,opening,y,done){const slug=row.dataset.slug,c=coverOf(slug),th=row.querySelector('.th'),W=innerWidth,H=innerHeight;
+const d=document.createElement('div');d.className='zoom';d.innerHTML='<div class="zbg"></div><div class="pg"><div class="in"></div></div>';
+const inn=d.querySelector('.in');inn.innerHTML=c.querySelector('template').innerHTML;if(y)inn.style.transform='translateY('+(-y)+'px)';
+let mini=null;if(!opening&&y&&ss.get('hv-mini')){const im=c.querySelector('img');mini=document.createElement('nav');mini.className='mini show';mini.style.cssText='position:absolute;transition:none';
+mini.innerHTML='<div><span class="back">Recipes</span>'+(im?'<img class="thumb" alt="" src="'+im.getAttribute('src')+'">':'')+'<b></b></div>';mini.querySelector('b').textContent=c.querySelector('b').textContent;d.querySelector('.pg').appendChild(mini)}
+document.body.appendChild(d);
+const photo=mini?mini.querySelector('.thumb'):inn.querySelector('.photo'),title=mini?mini.querySelector('b'):inn.querySelector('h1'),kick=mini?null:inn.querySelector('.kicker');
+const rb=row.querySelector('.tx b'),ri=row.querySelector('.tx i'),shared=[photo,title,kick].filter(Boolean);
+const opt={duration:DUR,easing:EASE,fill:'forwards'},an=[],dir=f=>opening?f:f.slice().reverse();
+// FLIP each shared piece from where it sits in the row to where it sits on the page
+const from=(el,src,uni)=>{const T=el.getBoundingClientRect(),S=src.getBoundingClientRect();
+const sc=uni?S.width/T.width:parseFloat(getComputedStyle(src).fontSize)/parseFloat(getComputedStyle(el).fontSize);
+el.style.transformOrigin='0 0';return 'translate('+(S.left-T.left).toFixed(1)+'px,'+(S.top-T.top+(uni?0:(S.height-T.height*sc)/2)).toFixed(1)+'px) scale('+sc.toFixed(4)+')'};
+if(photo){const t0=from(photo,th,true),s=th.offsetWidth/photo.offsetWidth,r1=parseFloat(getComputedStyle(photo).borderRadius)||14;
+an.push(photo.animate(dir([{transform:t0,borderRadius:(10/s).toFixed(1)+'px'},{transform:'none',borderRadius:r1+'px'}]),opt));th.style.opacity='0'}
+if(title&&rb){an.push(title.animate(dir([{transform:from(title,rb,false),opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}]),opt))}
+if(kick&&ri){an.push(kick.animate(dir([{transform:from(kick,ri,false),opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}]),opt))}
+// everything else on the page fades and settles in
+const rest=[],walk=n=>[...n.children].forEach(ch=>{if(shared.includes(ch))return;if(shared.some(x=>ch.contains(x)))walk(ch);else rest.push(ch)});walk(inn);if(mini)walk(mini);
+const fo=opening?{duration:DUR,delay:DUR*.32,easing:EASE,fill:'both'}:{duration:DUR*.3,easing:'ease-out',fill:'forwards'};
+rest.forEach(n=>an.push(n.animate(dir([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}]),fo)));
+if(mini)an.push(mini.animate(dir([{backgroundColor:'transparent',borderBottomColor:'transparent'},{}]),fo));
+const bo=opening?{duration:DUR*.32,easing:'ease-out',fill:'forwards'}:{duration:DUR*.4,delay:DUR*.22,easing:'ease-in',fill:'both'};
+an.push(d.firstChild.animate([{opacity:opening?0:1},{opacity:opening?1:0}],bo));
+let fin=false;const end=()=>{if(fin)return;fin=true;done(d,th)};Promise.all(an.map(a=>a.finished)).then(end,end);setTimeout(end,DUR*1.4+300)}
 function openRow(row){const s=row.dataset.slug,href=row.getAttribute('href');ss.set('hv-pos',s);if(reduce){location.href=href;return}
-ss.set('hv-open','1');const th=row.querySelector('.th'),o=fly(coverOf(s),th.getBoundingClientRect(),10,true);th.style.opacity='0';morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
+ss.set('hv-open','1');lift(row,true,0,()=>{location.href=href})}
 list.addEventListener('click',e=>{const r=e.target.closest('.row');if(!r)return;e.preventDefault();if(!anyOpen())openRow(r)});
 function ghost(c,r){const d=document.createElement('div');d.className='ghost front'+(c.classList.contains('pic')?' pic':'');
 d.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px';
@@ -673,7 +703,7 @@ const k='accent' in b.dataset?'accent':'theme',v='accent' in b.dataset?b.dataset
 themed(()=>{st[k]=v;save();apply()})};
 sheet.addEventListener('click',onSheet);fsheet.addEventListener('click',onSheet);
 act.addEventListener('click',e=>{const b=e.target.closest('.clear');if(!b)return;st.filters=st.filters.filter(x=>x!==b.dataset.c);save();apply();refilter()});
-addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost').forEach(n=>n.remove());all.forEach(c=>{c.getAnimations().forEach(a=>a.cancel());c.style.opacity=''});list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
+addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost,.zoom').forEach(n=>n.remove());all.forEach(c=>{c.getAnimations().forEach(a=>a.cancel());c.style.opacity=''});list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
 layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back()}});
 vstate();apply();if(LV){stage.classList.add('lv','lvd');list.hidden=false}layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back();
 })();
