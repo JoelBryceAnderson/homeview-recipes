@@ -221,8 +221,8 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .front img,.front .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .front.pic .cap{background:linear-gradient(rgba(0,0,0,.45),transparent 30%,transparent 48%,rgba(0,0,0,.72))}
 .backf{transform:rotateY(180deg);background:var(--paper)}
-.fc{position:absolute;left:0;top:0;transform-origin:0 0}
-.pg{position:absolute;inset:0;overflow:hidden;transform:translateZ(0);color:var(--ink);text-align:left}
+.fc{position:absolute;left:0;top:0;transform-origin:0 0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.pg{position:absolute;inset:0;overflow:hidden;color:var(--ink);text-align:left}
 .pg .in{max-width:760px;margin:0 auto;padding:16px 22px}
 """
 
@@ -304,6 +304,18 @@ def spring_linear(response=0.42, damping=0.84, n=40):
 
 SPRING, SPRING_MS = spring_linear()
 FLIP, FLIP_MS = spring_linear(0.58, 0.8)  # slower, slightly bouncier spring for the card flip
+
+
+def half_time(lin):
+    """Fraction of the duration at which a linear() easing first reaches 0.5, i.e. when the flip passes 90 degrees."""
+    v = [float(x) for x in lin[7:-1].split(",")]
+    for i in range(1, len(v)):
+        if v[i] >= 0.5:
+            return round((i - 1 + (0.5 - v[i - 1]) / (v[i] - v[i - 1])) / (len(v) - 1), 4)
+    return 0.5
+
+
+FLIP_HALF = half_time(FLIP)
 
 
 def cat_of(r):
@@ -509,7 +521,7 @@ bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);
 function fly(el,rect,rad,bare,y){const r=rect||el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');d.className='fly';
 // the card is built at full-screen size and scaled down, so it is rasterised at 1:1 and lands sharp instead of being a blown-up cover
 d.style.cssText='left:0;top:0;width:'+W+'px;height:'+H+'px;perspective:'+(1800*W/r.width).toFixed(0)+'px';
-const s0=r.width/W;d.innerHTML='<div class="flip"><div class="sh" style="border-radius:'+(18/s0).toFixed(1)+'px / '+(18*H/r.height).toFixed(1)+'px;box-shadow:0 '+(14/s0).toFixed(0)+'px '+(40/s0).toFixed(0)+'px rgba(0,0,0,.3)"></div><div class="face front'+(el.classList.contains('pic')?' pic':'')+'"><div class="fc" style="width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px;transform:scale('+W/r.width+','+H/r.height+') translateZ(0)"></div></div><div class="face backf"><div class="pg"><div class="in"></div></div></div></div>';
+const s0=r.width/W;d.innerHTML='<div class="flip"><div class="sh" style="border-radius:'+(18/s0).toFixed(1)+'px / '+(18*H/r.height).toFixed(1)+'px;box-shadow:0 '+(14/s0).toFixed(0)+'px '+(40/s0).toFixed(0)+'px rgba(0,0,0,.3)"></div><div class="face front'+(el.classList.contains('pic')?' pic':'')+'"><div class="fc" style="width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px;transform:scale('+W/r.width+','+H/r.height+')"></div></div><div class="face backf"><div class="pg"><div class="in"></div></div></div></div>';
 const front=d.querySelector('.fc');[...el.children].forEach(n=>{if(n.tagName!=='TEMPLATE'&&!(bare&&n.classList.contains('cap')))front.appendChild(n.cloneNode(true))});
 const inn=d.querySelector('.in');inn.innerHTML=el.querySelector('template').innerHTML;if(y)inn.style.transform='translateY('+(-y)+'px)';
 if(y&&ss.get('hv-mini')){const m=document.createElement('nav'),im=el.querySelector('img');m.className='mini show';m.style.position='absolute';
@@ -520,6 +532,11 @@ const full=()=>({x:0,y:0,w:innerWidth,h:innerHeight,r:0});
 function morph(o,a,b,r0,r1,lift,done){const fr=arc(full(),a,b,lift),opt={duration:FDUR,easing:FEASE,fill:'forwards'};
 o.d.animate(fr.map(f=>({transform:f.transform,offset:f.offset})),opt);
 o.faces.forEach(x=>x.animate(fr.map(f=>({borderRadius:f.borderRadius,offset:f.offset})),opt));
+// Safari can leave the front face showing (mirrored) after it turns away, so switch each face's visibility explicitly;
+// same duration and easing as the rotation, so the discrete switch lands exactly at 90 degrees
+// Safari applies discrete steps on linear time, so place the switch at the moment the spring passes halfway
+const vis2=deg=>deg<90?'visible':'hidden',hf=LIN?%FHALF%:.2,sw=(a,b)=>[{visibility:a,offset:0},{visibility:a,offset:hf},{visibility:b,offset:hf},{visibility:b,offset:1}],lo={duration:FDUR,fill:'forwards'};
+o.faces[0].animate(sw(vis2(r0),vis2(r1)),lo);o.faces[1].animate(sw(vis2(180-r0),vis2(180-r1)),lo);
 let fin=false;const f=()=>{if(fin)return;fin=true;done()};
 o.flip.animate([{transform:'rotateY('+r0+'deg)'},{transform:'rotateY('+r1+'deg)'}],opt).onfinish=f;setTimeout(f,FDUR+400)}
 function open(el){ss.set('hv-pos',el.dataset.slug);const href=el.getAttribute('href');if(reduce){location.href=href;return}
@@ -660,9 +677,9 @@ vstate();apply();if(LV){stage.classList.add('lv','lvd');list.hidden=false}layout
 """
 
 MOTION_JS = (MOTION_JS.replace("%SPRING%", SPRING).replace("%DUR%", str(SPRING_MS))
-             .replace("%FLIP%", FLIP).replace("%FDUR%", str(FLIP_MS)))
+             .replace("%FLIP%", FLIP).replace("%FDUR%", str(FLIP_MS)).replace("%FHALF%", str(FLIP_HALF)))
 PAGE_JS = PAGE_JS.replace("%MOTION%", MOTION_JS)
-FLOW_JS = FLOW_JS.replace("%MOTION%", MOTION_JS)
+FLOW_JS = FLOW_JS.replace("%MOTION%", MOTION_JS).replace("%FHALF%", str(FLIP_HALF))
 
 
 def page(r, slug, base):
