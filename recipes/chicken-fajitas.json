@@ -1,0 +1,58 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Chicken Fajitas",
+  "description": "Chicken thigh strips marinated 30 minutes in a quick chili-soy mixture, sautéed with peppers and onion, and served in warm tortillas with Pepper Jack.",
+  "recipeCategory": "Main Course",
+  "recipeCuisine": "Tex-Mex",
+  "keywords": "fajitas, chicken thighs, peppers, tortillas",
+  "prepTime": "PT30M",
+  "cookTime": "PT10M",
+  "totalTime": "PT40M",
+  "recipeYield": "6 servings",
+  "recipeIngredient": [
+    "1 Tbsp apple cider vinegar",
+    "1 Tbsp soy sauce",
+    "1 Tbsp chili powder",
+    "1 tsp sugar",
+    "3 cloves garlic, minced",
+    "1/8 tsp Tabasco sauce",
+    "1/2 tsp salt",
+    "1/8 tsp crushed red pepper flakes",
+    "1 1/2 lbs boneless skinless chicken thighs, cut into strips",
+    "1 Tbsp olive oil",
+    "1 onion, chopped",
+    "1 green bell pepper, sliced",
+    "1 red bell pepper, sliced",
+    "2 Tbsp lemon juice",
+    "8 flour tortillas, warmed",
+    "1 cup shredded Pepper Jack cheese"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Mix the marinade",
+      "text": "In a medium bowl, combine 1 Tbsp apple cider vinegar, 1 Tbsp soy sauce, 1 Tbsp chili powder, 1 tsp sugar, 3 minced garlic cloves, 1/8 tsp Tabasco sauce, 1/2 tsp salt and 1/8 tsp crushed red pepper flakes and blend well."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Marinate",
+      "text": "Place 1 1/2 lbs chicken thigh strips in the sauce, stirring to coat. Cover and let sit 30 minutes at room temperature."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Cook the chicken",
+      "text": "Drain the chicken, discarding the marinade. Add the chicken to a pan with 1 Tbsp olive oil and cook 5 minutes, stirring once halfway through."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Add the vegetables",
+      "text": "Add 1 chopped onion and the sliced green and red bell peppers and sauté another 3 to 5 minutes, until the chicken is thoroughly cooked and the vegetables are tender. Sprinkle with 2 Tbsp lemon juice and remove from the heat."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Assemble",
+      "text": "Make fajitas with 8 warmed flour tortillas, the chicken filling and 1 cup shredded Pepper Jack cheese."
+    }
+  ]
+}
