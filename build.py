@@ -60,7 +60,7 @@ CSS = """
 :root[data-theme=light]{color-scheme:light}
 :root{--tint:color-mix(in srgb,var(--accent) 13%,var(--card))}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:var(--paper)}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;background:var(--paper)}
 /* Sized for HomeView: a 7-inch square touch screen with rounded corners. Keep it dense. */
 body{font:17px/1.45 var(--sans);color:var(--ink);background:var(--paper);max-width:760px;margin:0 auto;padding:16px 22px 48px}
 a{color:var(--accent)}
@@ -161,6 +161,7 @@ transform-origin:50% 50%;transform:scale(.97,.1);opacity:0;transition:transform 
 .list{position:absolute;inset:0;z-index:4000;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 16px 16px}
 .list[hidden],.row[hidden],.lh[hidden]{display:none}
 .lw{max-width:640px;margin:0 auto}
+.lcount{margin:0;padding:18px 0 6px;text-align:center;font:600 .78em/1 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
 .lh{position:sticky;top:0;z-index:1;margin:0;padding:10px 6px 5px;font:700 .72em/1 var(--sans);letter-spacing:.12em;color:var(--accent);background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .row{display:flex;align-items:center;gap:14px;min-height:68px;padding:8px 6px;color:var(--ink);text-decoration:none;position:relative;-webkit-tap-highlight-color:transparent}
 .row::before{content:"";position:absolute;left:72px;right:0;bottom:0;height:1px;background:var(--line);transform-origin:0 50%;transition:transform .5s cubic-bezier(.2,.9,.25,1) var(--dd,0s)}
@@ -350,7 +351,7 @@ def head_html(r, img):
 {facts_html}"""
 
 
-THEME_JS = "(()=>{try{const s=JSON.parse(localStorage.getItem('hv-recipes'))||{},r=document.documentElement;if(s.accent)r.dataset.accent=s.accent;if(s.theme)r.dataset.theme=s.theme}catch(_){}})();"
+THEME_JS = "document.addEventListener('gesturestart',e=>e.preventDefault());(()=>{try{const s=JSON.parse(localStorage.getItem('hv-recipes'))||{},r=document.documentElement;if(s.accent)r.dataset.accent=s.accent;if(s.theme)r.dataset.theme=s.theme}catch(_){}})();"
 
 MOTION_JS = """
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -397,6 +398,7 @@ const F=st.filters;vis=all.filter(c=>!F.length||F.includes(c.dataset.cat));if(!v
 all.forEach(c=>{c.hidden=!vis.includes(c)});
 const vs=new Set(vis.map(c=>c.dataset.slug));rows.forEach(r=>{r.hidden=!vs.has(r.dataset.slug)});lrows=rows.filter(r=>!r.hidden);
 heads.forEach(h=>{h.hidden=!lrows.some(r=>r.dataset.letter===h.dataset.letter)});
+list.querySelector('.lcount').textContent=lrows.length+(lrows.length===1?' Recipe':' Recipes');
 marks.forEach(m=>m.remove());marks=[];pos=[];let p=0,prev=null;
 vis.forEach(c=>{const L=c.dataset.letter;
 pos.push(p);p+=1;prev=L});
@@ -625,7 +627,7 @@ def page(r, slug, base):
     return f"""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>{e(r['name'])}</title>
 <script>{THEME_JS}</script>
 <script type="application/ld+json">
@@ -709,7 +711,7 @@ def index(recipes):
     return f"""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Recipes</title>
 <script>{THEME_JS}</script>
 <style>{CSS}</style>
@@ -719,7 +721,7 @@ def index(recipes):
 <button class="gear" aria-label="Settings" aria-expanded="false">{GEAR_SVG}</button></header>
 <div class="stage"><span class="probe"></span>{''.join(cover(i, s, r) for i, (s, r) in enumerate(items))}
 <div class="flow"><div class="track"></div></div>
-<div class="list" hidden><div class="lw">{''.join(rows)}</div></div></div>
+<div class="list" hidden><div class="lw">{''.join(rows)}<p class="lcount"></p></div></div></div>
 <div class="where"><span class="wl" aria-hidden="true"></span><span class="wn" aria-live="polite"></span></div>
 <nav class="scrub" aria-label="Jump to letter"><span class="knob"></span><div class="letters"></div></nav>
 <div class="sheet" hidden role="dialog" aria-label="Settings">
