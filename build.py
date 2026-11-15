@@ -144,8 +144,10 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .scrub .knob{position:absolute;top:50%;left:0;width:56px;height:6px;margin-top:-3px;border-radius:3px;background:var(--muted);transition:opacity .25s .3s}
 .scrub.open .knob,.scrub.open::before{opacity:0;transition:opacity .12s}
 .scrub .letters{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;pointer-events:none}
-.scrub .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.13));
-transform-origin:50% 50%;transform:scale(.97,.1);opacity:0;transition:transform .34s cubic-bezier(.45,0,.2,1) .1s,opacity .14s .34s}
+/* the svg box itself has room for the bulge and its shadow (24px each side, 56px above): Safari clips a filtered
+   element to its own box, so drawing outside it with overflow:visible got the bulge cut off */
+.scrub .shape{position:absolute;left:-24px;top:-56px;width:calc(100% + 48px);height:calc(100% + 80px);overflow:visible;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.13));
+transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform .34s cubic-bezier(.45,0,.2,1) .1s,opacity .14s .34s}
 .scrub.open .shape{transform:none;opacity:1;transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .1s}
 .scrub .letters a span{display:block;opacity:0;scale:.2;transition:opacity .16s,scale .22s cubic-bezier(.5,0,.75,0);transition-delay:var(--d,0s)}
 .scrub.open .letters a span{opacity:1;scale:1;transition:opacity .2s,scale .5s cubic-bezier(.2,1.7,.4,1);transition-delay:var(--d,0s)}
@@ -392,7 +394,8 @@ all=[...stage.querySelectorAll('.cover')],bar=document.querySelector('.scrub'),k
 sheet=document.querySelector('.sheet'),gear=document.querySelector('.gear'),act=document.querySelector('.active'),where=document.querySelector('.where'),
 list=stage.querySelector('.list'),rows=[...list.querySelectorAll('.row')],heads=[...list.querySelectorAll('.lh')],vbtn=document.querySelector('.view');
 let vis=[],pos=[],marks=[],S=1,step=1,cur=-1,anim=0,down=false,timer,picked='',LV=st.view==='list',lrows=[],lset=-1,vfin=null;
-const X=o=>{const a=Math.abs(o),n=Math.min(a,1);return Math.sign(o)*(S*.66*Math.sqrt(n)+Math.max(a-1,0)*S*.19)};
+// offset of a cover from centre: a clear gap beside the front cover, then even spacing for the stack
+const X=o=>{const a=Math.abs(o),n=Math.min(a,1);return Math.sign(o)*(S*.74*Math.sqrt(n)+Math.max(a-1,0)*S*.25)};
 
 function layout(slug){
 S=Math.max(120,Math.round(Math.min(290,stage.clientHeight*.62,stage.clientWidth*.62)));stage.style.setProperty('--s',S+'px');step=S*.55;
@@ -406,7 +409,7 @@ vis.forEach(c=>{const L=c.dataset.letter;
 pos.push(p);p+=1;prev=L});
 const cw=flow.clientWidth;track.style.width=pos[pos.length-1]*step+cw+'px';track.innerHTML='';
 pos.forEach(q=>{const s=document.createElement('span');s.className='snap';s.style.left=q*step+cw/2-1+'px';track.appendChild(s)});
-strip.innerHTML='<svg class="shape" aria-hidden="true"><path/></svg><span class="sel"></span>';const have=new Set(vis.map(c=>c.dataset.letter));[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',...(have.has('#')?['#']:[])].forEach(L=>{const a=document.createElement('a');a.href='#';a.dataset.l=L;a.innerHTML='<span>'+L+'</span>';if(!have.has(L)){a.className='off';a.setAttribute('aria-disabled','true')}strip.appendChild(a)});
+strip.innerHTML='<svg class="shape" aria-hidden="true"><path transform="translate(24 56)"/></svg><span class="sel"></span>';const have=new Set(vis.map(c=>c.dataset.letter));[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',...(have.has('#')?['#']:[])].forEach(L=>{const a=document.createElement('a');a.href='#';a.dataset.l=L;a.innerHTML='<span>'+L+'</span>';if(!have.has(L)){a.className='off';a.setAttribute('aria-disabled','true')}strip.appendChild(a)});
 let i=slug?vis.findIndex(c=>c.dataset.slug===slug):0;if(i<0)i=0;
 flow.style.scrollSnapType='none';flow.scrollLeft=pos[i]*step;requestAnimationFrame(()=>{flow.style.scrollSnapType=''});
 cur=-1;render();sync();if(LV)lknob()}
@@ -531,19 +534,23 @@ function vplace(){const b=bar.style;if(!LV){b.top=b.left=b.width='';return}const
 b.top=(t-22)+'px';b.left=(innerWidth-24)+'px';b.width=Math.max(160,innerHeight-t-76)+'px'}
 function vstate(){if(LV){clearTimeout(timer);bar.classList.remove('open','mag');sh.a=sh.ta=0}else bar.classList.remove('drag');vbtn.classList.toggle('lv',LV);vbtn.setAttribute('aria-label',LV?'Show as covers':'Show as list');document.body.classList.toggle('listing',LV);vplace()}
 function geom(){const r=bar.getBoundingClientRect(),k=knob.getBoundingClientRect();
-return LV?{v:1,x:r.left+r.width/2,a:r.top,b:r.bottom,k:k.top+k.height/2}:{v:0,y:r.top+r.height/2,a:r.left,b:r.right,k:k.left+k.width/2}}
+return LV?{v:1,x:r.left+r.width/2,a:r.top,b:r.bottom,k:k.top+k.height/2,kl:k.height}:{v:0,y:r.top+r.height/2,a:r.left,b:r.right,k:k.left+k.width/2,kl:k.width}}
 // the bar's track and knob slide along one path: the bottom edge, round the bottom-right corner, up the right edge
 let rfin=null;
-// the corner is a wide quarter circle (it may swallow the ends of both bars); points on it are mapped by arc length
-function rail(g0,g1){if(reduce||g0.v===g1.v)return;const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,
-R=Math.max(0,Math.min(150,Math.min(innerWidth,innerHeight)*.22,(y-v.a)*.45,(xv-x0)*.45)),cl=(t,a,b)=>Math.max(a,Math.min(b,t)),
+// the corner is a moderate quarter circle, kept clear of both bars where there's room so the bars' ends sit on the
+// straight runs; points that do land on it are mapped by arc length. The rail is measured a frame after the switch,
+// once the new view has laid out, and cross-fades into the real bar so the end doesn't snap
+function rail(g0,g1){if(reduce||g0.v===g1.v){bar.style.opacity='';return}const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,
+cl=(t,a,b)=>Math.max(a,Math.min(b,t)),R=Math.max(0,Math.min(64,Math.min(innerWidth,innerHeight)*.09,Math.max(28,y-v.b),Math.max(28,xv-h.b),(y-v.a)*.4,(xv-x0)*.4)),
 h0=xv-R-x0,sv=h0+Math.PI*R/2,sH=x=>x<=xv-R?x-x0:h0+R*Math.asin(cl((x-xv+R)/(R||1),0,1)),sV=q=>q<=y-R?sv+(y-R-q):h0+R*Math.acos(cl((q-y+R)/(R||1),0,1)),d='M'+x0+' '+y+'H'+(xv-R)+'A'+R+' '+R+' 0 0 0 '+xv+' '+(y-R)+'V'+Math.min(v.a,y-R),
-tr=[[sH(h.a)+2,sH(h.b)-2],[sV(v.b)+2,sV(v.a)-2]],kn=[sH(h.k),sV(v.k)],s=document.createElementNS('http://www.w3.org/2000/svg','svg');
+tr=[[sH(h.a)+2,sH(h.b)-2],[sV(v.b)+2,sV(v.a)-2]],kh=[h.kl/2-3,v.kl/2-3],kn=[sH(h.k),sV(v.k)],s=document.createElementNS('http://www.w3.org/2000/svg','svg');
 s.setAttribute('class','rail');s.innerHTML='<path class="t" d="'+d+'"/><path class="k" d="'+d+'"/>';document.body.appendChild(s);
 const i=g0.v?1:0,j=1-i,seg=(a,b)=>({strokeDasharray:(b-a).toFixed(1)+'px 100000px',strokeDashoffset:(-a).toFixed(1)+'px'}),o={duration:DUR+200,easing:EASE,fill:'forwards'};
-bar.style.opacity='0';s.firstChild.animate([seg(...tr[i]),seg(...tr[j])],o);const an=s.lastChild.animate([seg(kn[i]-25,kn[i]+25),seg(kn[j]-25,kn[j]+25)],o);
-let done=false;const f=rfin=()=>{if(done)return;done=true;rfin=null;s.remove();bar.style.opacity=''};an.onfinish=f;setTimeout(f,DUR+700)}
-function setView(v){if(v===LV)return;if(vfin)vfin();if(rfin)rfin();const g0=geom();LV=v;if(LV)st.view='list';else delete st.view;save();(LV?toList:toCovers)();rail(g0,geom())}
+bar.style.opacity='0';s.firstChild.animate([seg(...tr[i]),seg(...tr[j])],o);const an=s.lastChild.animate([seg(kn[i]-kh[i],kn[i]+kh[i]),seg(kn[j]-kh[j],kn[j]+kh[j])],o);
+let done=false;const f=rfin=()=>{if(done)return;done=true;rfin=null;s.remove();bar.style.opacity=''};
+an.onfinish=()=>{if(done)return;bar.style.opacity='';bar.animate([{opacity:0},{opacity:1}],{duration:140,easing:'ease-out'});s.animate([{opacity:1},{opacity:0}],{duration:140,easing:'ease-out',fill:'forwards'}).onfinish=f};
+setTimeout(f,DUR+900)}
+function setView(v){if(v===LV)return;if(vfin)vfin();if(rfin)rfin();const g0=geom();LV=v;if(LV)st.view='list';else delete st.view;save();if(!reduce)bar.style.opacity='0';(LV?toList:toCovers)();requestAnimationFrame(()=>requestAnimationFrame(()=>{if(LV===v)rail(g0,geom())}))}
 // covers -> list: the centre cover shrinks into its row's thumbnail while the rest of the flow falls away and rows cascade in
 function toList(){stop();const c=vis[cur],r0=c&&c.getBoundingClientRect(),R=stage.getBoundingClientRect(),
 was=all.filter(x=>!x.hidden&&x!==c&&x.style.visibility!=='hidden'&&seen(x,R));
