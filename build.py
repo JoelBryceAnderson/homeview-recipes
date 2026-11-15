@@ -139,7 +139,9 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .flow::-webkit-scrollbar{display:none}
 .track{position:relative;height:100%}
 .snap{position:absolute;top:0;width:2px;height:1px;scroll-snap-align:center}
-.scrub{position:relative;align-self:center;width:min(520px,calc(100% - 44px));height:44px;flex:none;touch-action:none;user-select:none;-webkit-user-select:none}
+/* inset 60px a side so the right end stops short of the list view's bar, leaving room for the corner the bar
+   slides round when the view switches */
+.scrub{position:relative;align-self:center;width:min(520px,calc(100% - 120px));height:44px;flex:none;touch-action:none;user-select:none;-webkit-user-select:none}
 .scrub::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:var(--line);transition:opacity .25s .3s}
 .scrub .knob{position:absolute;top:50%;left:0;width:56px;height:6px;margin-top:-3px;border-radius:3px;background:var(--muted);transition:opacity .25s .3s}
 .scrub.open .knob,.scrub.open::before{opacity:0;transition:opacity .12s}
@@ -539,11 +541,11 @@ function geom(){const r=bar.getBoundingClientRect(),k=knob.getBoundingClientRect
 return LV?{v:1,x:r.left+r.width/2,a:r.top,b:r.bottom,k:k.top+k.height/2,kl:k.height}:{v:0,y:r.top+r.height/2,a:r.left,b:r.right,k:k.left+k.width/2,kl:k.width}}
 // the bar's track and knob slide along one path: the bottom edge, round the bottom-right corner, up the right edge
 let rfin=null;
-// the corner is a moderate quarter circle, kept clear of both bars where there's room so the bars' ends sit on the
-// straight runs; points that do land on it are mapped by arc length. The rail is measured a frame after the switch,
+// the corner is a quarter circle no bigger than the gap between the two bars, so both bars' ends sit on the straight
+// runs and the rail's last frame matches the real bar exactly. The rail is measured a frame after the switch,
 // once the new view has laid out, and cross-fades into the real bar so the end doesn't snap
 function rail(g0,g1){if(reduce||g0.v===g1.v){bar.style.opacity='';return}const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,
-cl=(t,a,b)=>Math.max(a,Math.min(b,t)),R=Math.max(0,Math.min(64,Math.min(innerWidth,innerHeight)*.09,Math.max(28,y-v.b),Math.max(28,xv-h.b),(y-v.a)*.4,(xv-x0)*.4)),
+cl=(t,a,b)=>Math.max(a,Math.min(b,t)),R=Math.max(0,Math.min(40,y-v.b-2,xv-h.b-2)),
 h0=xv-R-x0,sv=h0+Math.PI*R/2,sH=x=>x<=xv-R?x-x0:h0+R*Math.asin(cl((x-xv+R)/(R||1),0,1)),sV=q=>q<=y-R?sv+(y-R-q):h0+R*Math.acos(cl((q-y+R)/(R||1),0,1)),d='M'+x0+' '+y+'H'+(xv-R)+'A'+R+' '+R+' 0 0 0 '+xv+' '+(y-R)+'V'+Math.min(v.a,y-R),
 tr=[[sH(h.a)+2,sH(h.b)-2],[sV(v.b)+2,sV(v.a)-2]],kh=[h.kl/2-3,v.kl/2-3],kn=[sH(h.k),sV(v.k)],s=document.createElementNS('http://www.w3.org/2000/svg','svg');
 s.setAttribute('class','rail');s.innerHTML='<path class="t" d="'+d+'"/><path class="k" d="'+d+'"/>';document.body.appendChild(s);
