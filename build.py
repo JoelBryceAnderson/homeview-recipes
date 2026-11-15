@@ -53,6 +53,7 @@ CSS = """
 :root[data-accent=green]{--a-l:#1d7f46;--a-d:#4cd17f}
 :root[data-accent=orange]{--a-l:#c2560f;--a-d:#ff9f45}
 :root[data-accent=purple]{--a-l:#6e3fd1;--a-d:#b18cff}
+:root[data-accent=tiffany]{--a-l:#0f8a83;--a-d:#4cc4ba}
 :root[data-accent=graphite]{--a-l:#48484a;--a-d:#8e8e93}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--paper:#000;--card:#1c1c1e;--ink:#f5f5f7;--muted:#98989d;--line:#38383a;--shadow:none;--accent:var(--a-d)}}
 :root[data-theme=dark]{color-scheme:dark;--paper:#000;--card:#1c1c1e;--ink:#f5f5f7;--muted:#98989d;--line:#38383a;--shadow:none;--accent:var(--a-d)}
@@ -103,7 +104,7 @@ h3{font-size:1em;margin:1em 0 .1em;color:var(--accent)}
 body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 0 10px;display:flex;flex-direction:column}
 .masthead{display:flex;align-items:center;gap:10px;padding:0 16px 0 22px;min-height:44px}
 .masthead h1{font-size:1.6em;margin:0}
-.where{flex:none;text-align:center;font:600 .72em/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--muted);opacity:.8;margin:2px 0 4px}
+.where{flex:none;text-align:center;font:600 .72em/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--muted);opacity:.8;margin:2px 0 4px;transition:opacity .2s}
 .active{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .active::-webkit-scrollbar{display:none}
 .clear{flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px 0 12px;border-radius:15px;border:0;background:var(--accent);color:#fff;font-weight:600;font-size:.78em}
@@ -129,18 +130,26 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .scrub{position:relative;align-self:center;width:min(520px,calc(100% - 44px));height:44px;flex:none;touch-action:none;user-select:none;-webkit-user-select:none}
 .scrub::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:var(--line);transition:opacity .2s}
 .scrub .knob{position:absolute;top:50%;left:0;width:56px;height:6px;margin-top:-3px;border-radius:3px;background:var(--muted);transition:opacity .2s}
-.scrub .letters{position:absolute;inset:0;display:flex;justify-content:space-evenly;align-items:center;padding:0 6px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.14);opacity:0;transform:scaleX(.9) scaleY(.3);transition:opacity .2s,transform .38s cubic-bezier(.2,1.25,.3,1);pointer-events:none}
+.scrub .letters{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;opacity:0;transform:scaleX(.9) scaleY(.3);transition:opacity .2s,transform .38s cubic-bezier(.2,1.25,.3,1);pointer-events:none}
 .scrub.open .letters{opacity:1;transform:none}
 .scrub.open .knob,.scrub.open::before{opacity:0}
-.scrub .letters a{display:grid;place-items:center;min-width:32px;height:32px;border-radius:16px;font:700 .85em/1 var(--sans);text-decoration:none;color:var(--accent);transition:background .15s,color .15s}
+.scrub .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.13))}
+.scrub .shape path{fill:var(--card);stroke:var(--line);stroke-width:1}
+.scrub .letters a{position:relative;flex:1;max-width:30px;display:grid;place-items:center;height:30px;border-radius:15px;font:700 .72em/1 var(--sans);text-decoration:none;color:var(--accent);transform-origin:50% 100%;transition:transform .42s cubic-bezier(.2,1.5,.35,1),background .15s,color .15s}
+.scrub .letters a.on{transform:scale(1.3)}
+.scrub.mag .letters a{transition:background .15s,color .15s}
+.scrub.mag .letters a.on{background:none;color:#fff}
+.scrub .sel{position:absolute;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.2);opacity:0;transform:scale(.4);transition:opacity .15s,transform .18s cubic-bezier(.2,.9,.3,1.15);pointer-events:none}
+.scrub.mag .sel{opacity:1}
 .scrub .letters a.on{background:var(--accent);color:#fff}
+.scrub .letters a.off{color:var(--muted);opacity:.35}
 /* settings sheet */
 .sheet{position:fixed;top:62px;right:14px;width:min(330px,calc(100% - 28px));background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 14px 44px rgba(0,0,0,.26);padding:14px 16px 16px;z-index:5000}
 .sheet[hidden]{display:none}
 .sheet h3{margin:0 0 .55em;font:700 .66em/1.2 var(--sans);text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
 .sheet section+section{margin-top:14px}
-.swatches{display:flex;gap:12px;flex-wrap:wrap}
-.swatches button{width:34px;height:34px;border-radius:50%;border:0;background:var(--sw);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);transition:box-shadow .2s}
+.swatches{display:flex;gap:9px;flex-wrap:wrap}
+.swatches button{width:32px;height:32px;border-radius:50%;border:0;background:var(--sw);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);transition:box-shadow .2s}
 .swatches button[aria-pressed=true]{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--sw)}
 .seg{display:flex;background:var(--paper);border-radius:10px;padding:3px}
 .seg button{flex:1;height:34px;border:0;border-radius:8px;background:none;color:var(--ink);font-weight:600;font-size:.82em}
@@ -220,7 +229,8 @@ COVER_COLORS = [  # muted two-tone gradients for photo-less covers
     ("#4a3d6b", "#7966a6"), ("#7d5419", "#c08b3d"),
 ]
 ACCENTS = [("", "#b0263b", "Cranberry"), ("blue", "#0a64d6", "Blue"), ("green", "#1d7f46", "Green"),
-           ("orange", "#c2560f", "Orange"), ("purple", "#6e3fd1", "Purple"), ("graphite", "#48484a", "Graphite")]
+           ("orange", "#c2560f", "Orange"), ("purple", "#6e3fd1", "Purple"), ("tiffany", "#81d8d0", "Tiffany blue"),
+           ("graphite", "#48484a", "Graphite")]
 
 
 def spring_linear(response=0.42, damping=0.84, n=40):
@@ -349,7 +359,7 @@ if(L!==prev){const m=document.createElement('span');m.className='mark';m.textCon
 pos.push(p);p+=1;prev=L});
 const cw=flow.clientWidth;track.style.width=pos[pos.length-1]*step+cw+'px';track.innerHTML='';
 pos.forEach(q=>{const s=document.createElement('span');s.className='snap';s.style.left=q*step+cw/2-1+'px';track.appendChild(s)});
-strip.innerHTML='';[...new Set(vis.map(c=>c.dataset.letter))].forEach(L=>{const a=document.createElement('a');a.href='#';a.dataset.l=L;a.textContent=L;strip.appendChild(a)});
+strip.innerHTML='<svg class="shape" aria-hidden="true"><path/></svg><span class="sel"></span>';const have=new Set(vis.map(c=>c.dataset.letter));[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',...(have.has('#')?['#']:[])].forEach(L=>{const a=document.createElement('a');a.href='#';a.dataset.l=L;a.textContent=L;if(!have.has(L)){a.className='off';a.setAttribute('aria-disabled','true')}strip.appendChild(a)});requestAnimationFrame(draw);
 let i=slug?vis.findIndex(c=>c.dataset.slug===slug):0;if(i<0)i=0;
 flow.style.scrollSnapType='none';flow.scrollLeft=pos[i]*step;requestAnimationFrame(()=>{flow.style.scrollSnapType=''});
 cur=-1;render()}
@@ -379,13 +389,31 @@ const tick=t=>{const k=Math.min(1,(t-t0)/ms),ez=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3
 if(k<1)anim=requestAnimationFrame(tick);else{anim=0;flow.style.scrollSnapType=''}};anim=requestAnimationFrame(tick)}
 flow.addEventListener('scroll',()=>{if(!anim)render()},{passive:true});
 ['wheel','touchstart'].forEach(ev=>flow.addEventListener(ev,stop,{passive:true}));
-addEventListener('resize',()=>layout(vis[cur]&&vis[cur].dataset.slug));
+addEventListener('resize',()=>{layout(vis[cur]&&vis[cur].dataset.slug);draw()});
 
-function pick(x){let best=null,d=1e9;[...strip.children].forEach(a=>{const r=a.getBoundingClientRect(),m=Math.abs(r.left+r.width/2-x);if(m<d){d=m;best=a}});
-if(best&&best.dataset.l!==picked){picked=best.dataset.l;[...strip.children].forEach(a=>a.classList.toggle('on',a===best));go(vis.findIndex(c=>c.dataset.letter===picked))}}
-bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);bar.classList.add('open');try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(e.clientX)});
-bar.addEventListener('pointermove',e=>{if(down)pick(e.clientX)});
-const end=()=>{if(!down)return;down=false;clearTimeout(timer);timer=setTimeout(()=>bar.classList.remove('open'),900)};
+const AMAX=26,sh={x:0,a:0,vx:0,va:0,tx:0,ta:0};let sraf=0;
+function shape(w,h,bx,amp){const r=h/2,sg=30,y=x=>{const q=(x-bx)/sg;return -amp*Math.exp(-q*q)};let d='M'+r+' '+h+'C'+(r*.08)+' '+h+' '+(r*.08)+' '+y(r).toFixed(2)+' '+r+' '+y(r).toFixed(2);
+for(let x=r+4;x<w-r;x+=4)d+='L'+x+' '+y(x).toFixed(2);const yr=y(w-r).toFixed(2);
+return d+'L'+(w-r)+' '+yr+'C'+(w-r*.08)+' '+yr+' '+(w-r*.08)+' '+h+' '+(w-r)+' '+h+'Z'}
+function draw(){const w=strip.clientWidth,h=strip.clientHeight,as=[...strip.querySelectorAll('a')],n=as.length,m=Math.max(0,sh.a/AMAX);let bx=sh.x;
+if(n>1&&m>.001){const c=as.map(a=>a.offsetLeft+a.offsetWidth/2),sp=(c[n-1]-c[0])/(n-1),k=c.map(x=>{const q=(x-sh.x)/(sp*1.7);return m*Math.exp(-q*q)}),
+wt=k.map(v=>1+v*1.15),U=wt.reduce((x,y)=>x+y,0);let acc=0;const t=wt.map(v=>{const p=c[0]-sp/2+(acc+v/2)/U*n*sp;acc+=v;return p});
+const sel=strip.querySelector('.sel');as.forEach((a,i)=>{const sc=1+k[i]*.9,dy=-k[i]*16;a.style.transform='translate('+(t[i]-c[i]).toFixed(1)+'px,'+dy.toFixed(1)+'px) scale('+sc.toFixed(3)+')';
+if(a.classList.contains('on'))sel.style.transform='translate('+t[i].toFixed(1)+'px,'+(a.offsetTop+a.offsetHeight/2+dy-(sc-1)*a.offsetHeight/2).toFixed(1)+'px)'});
+const j=Math.max(0,Math.min(n-2,Math.floor((sh.x-c[0])/sp))),f=Math.max(0,Math.min(1,(sh.x-c[j])/sp));bx=t[j]+(t[j+1]-t[j])*f}
+else as.forEach(a=>{a.style.transform=''});
+bx=Math.max(h/2+14,Math.min(w-h/2-14,bx));strip.querySelector('.shape path').setAttribute('d',shape(w,h,bx,Math.max(0,sh.a)))}
+function spring(){sh.vx=sh.vx*.6+(sh.tx-sh.x)*.24;sh.x+=sh.vx;sh.va=sh.va*.62+(sh.ta-sh.a)*.2;sh.a+=sh.va;draw();
+if(Math.abs(sh.tx-sh.x)+Math.abs(sh.vx)+Math.abs(sh.ta-sh.a)+Math.abs(sh.va)>.05){sraf=requestAnimationFrame(spring);return}
+sraf=0;sh.x=sh.tx;sh.a=sh.ta;sh.vx=sh.va=0;if(!sh.ta){bar.classList.remove('mag');where.style.opacity=''}draw()}
+const kick=()=>{if(!sraf)sraf=requestAnimationFrame(spring)};
+function mag(x){const on=strip.querySelector('a.on:not(.off)'),rx=on?on.offsetLeft+on.offsetWidth/2:x-strip.getBoundingClientRect().left;if(!bar.classList.contains('mag')){sh.x=rx}sh.tx=rx;sh.ta=AMAX;bar.classList.add('mag');where.style.opacity='0';kick()}
+function unmag(){sh.ta=0;kick()}
+function pick(x){let best=null,d=1e9;const L=strip.getBoundingClientRect().left;[...strip.querySelectorAll('a:not(.off)')].forEach(a=>{const m=Math.abs(L+a.offsetLeft+a.offsetWidth/2-x);if(m<d){d=m;best=a}});
+if(best&&best.dataset.l!==picked){picked=best.dataset.l;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a===best));draw();go(vis.findIndex(c=>c.dataset.letter===picked))}}
+bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);bar.classList.add('open');try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(e.clientX);if(!reduce)mag(e.clientX)});
+bar.addEventListener('pointermove',e=>{if(down){pick(e.clientX);if(!reduce)mag(e.clientX)}});
+const end=()=>{if(!down)return;down=false;unmag();clearTimeout(timer);timer=setTimeout(()=>bar.classList.remove('open'),900)};
 bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);bar.addEventListener('click',e=>e.preventDefault());
 
 function fly(el){const r=el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');d.className='fly';
