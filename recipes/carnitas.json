@@ -1,0 +1,106 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Carnitas (Slow Cooker Pulled Pork)",
+  "description": "Pork shoulder slow-cooked with orange juice, onion, jalapeño and garlic until shreddable, with an optional pan-crisping step for crusty edges.",
+  "recipeCategory": "Main Course",
+  "recipeCuisine": "Mexican",
+  "keywords": "carnitas, pulled pork, slow cooker, tacos",
+  "prepTime": "PT15M",
+  "cookTime": "PT6H",
+  "totalTime": "PT6H15M",
+  "recipeYield": "10 to 12 servings",
+  "recipeIngredient": [
+    "4 lb pork shoulder (pork butt), skinless, boneless",
+    "2 1/2 tsp salt",
+    "1 tsp black pepper",
+    "1 onion, chopped",
+    "1 jalapeño, deseeded, chopped",
+    "4 cloves garlic, minced",
+    "3/4 cup juice from orange (2 oranges)",
+    "1 tbsp dried oregano (for the rub)",
+    "2 tsp ground cumin (for the rub)",
+    "1 tbsp olive oil (for the rub)",
+    "1 tbsp oil, for crisping (optional)"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Season the pork",
+      "text": "Rinse and dry the 4 lb pork shoulder. Rub all over with 2 1/2 tsp salt and 1 tsp black pepper."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Make the rub",
+      "text": "Combine 1 tbsp dried oregano, 2 tsp ground cumin and 1 tbsp olive oil. Rub all over the pork, or simply distribute it over the top of the pork in the slow cooker."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Load the slow cooker",
+      "text": "Place the pork in a slow cooker, fat cap up. Top with 1 chopped onion, 1 chopped jalapeño and 4 minced garlic cloves (don't worry about spreading them), then squeeze over 3/4 cup orange juice (about 2 oranges)."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Slow cook",
+      "text": "Cook on low for 10 hours or on high for 7 hours. It will probably be done sooner, so check after 6 hours."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Shred",
+      "text": "The pork should be tender enough to shred. Remove from the slow cooker and let cool slightly, then shred using two forks."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Skim and reduce the juices",
+      "text": "Optional: skim the fat from the juices left in the slow cooker and discard. If you have a lot more than 2 cups of juice, reduce it to about 2 cups. The liquid will be salty; it is the seasoning for the pork. Set aside without straining; the onion is very soft."
+    },
+    {
+      "@type": "HowToSection",
+      "name": "To crisp (optional)",
+      "itemListElement": [
+        {
+          "@type": "HowToStep",
+          "name": "Sear in batches",
+          "text": "Heat 1 tbsp oil in a large non-stick or well-seasoned skillet over high heat. Spread the pork in the pan and drizzle over some juices. Wait until the juices evaporate and the bottom is golden brown and crusty, then turn and sear the other side only briefly, so there are still tender juicy bits. Remove the pork and repeat in batches without crowding the pan."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Serve",
+          "text": "Just before serving, drizzle over more juices and serve hot, stuffed in tacos."
+        }
+      ]
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Pork choice: garlic herb seasoned pork tenderloins add extra flavor. If you use seasoned pork, skip drying it, and if you use unseasoned pork, add extra garlic herb seasoning (like a dry Italian dressing packet). Tenderloins are very lean, so no fat skimming is needed."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Variations: use sweet onion such as Vidalia, leave the jalapeño seeds in, and add extra garlic (or a liberal amount of garlic powder). To skip crisping, leave the pork in the slow cooker and shred it right in the juices."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Pork size: this recipe works for 3.5 to 5 lb of boneless pork. For 2 to 3 lb, cook 8 hours on low. For 6 to 8 lb, use a large oval slow cooker and cook 12 hours on low. Add 1 lb for bone-in."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Instant Pot or electric pressure cooker: 1 hour 30 minutes on high, then release pressure naturally and continue from shredding. Stove pressure cooker: elevate the pork on a rack or balls of foil, or add 3/4 cup water, and cook 1 hour 30 minutes."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Oven: put the pork in a roasting pan with 2 cups water around it, cover tightly with foil and roast at 325°F for 2 hours, then 1 to 1 1/2 hours uncovered, adding water if it dries out. You should end with 1 1/2 to 2 cups liquid. The crisping step can be skipped. Shred and drizzle with juices."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Taco fixings: diced avocado or guacamole, pico de gallo or salsa, sliced tomato, grated cheese, sour cream, lettuce, or pickled cabbage or red onions. Also good in burritos, quesadillas, enchiladas, sliders, taco soup, or with Mexican red rice."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Storing: shred the pork but don't pan fry. Keep pork and juices separate and refrigerate up to 3 days or freeze up to 3 months. Gently reheat the juices (they congeal when cold), then crisp per the recipe, drizzling with juices. Leftovers already crisped keep well; drizzle with juice, cover and reheat."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Make ahead: brown the pork a few hours ahead, then keep it warm in a slow cooker on the warm setting, drizzled generously with juices and loosely covered."
+    }
+  ]
+}
