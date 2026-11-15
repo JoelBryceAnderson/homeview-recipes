@@ -104,7 +104,7 @@ h3{font-size:1em;margin:1em 0 .1em;color:var(--accent)}
 body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 0 10px;display:flex;flex-direction:column}
 .masthead{display:flex;align-items:center;gap:10px;padding:0 16px 0 22px;min-height:44px}
 .masthead h1{font-size:1.6em;margin:0}
-.where{flex:none;text-align:center;font:600 .72em/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--muted);opacity:.8;margin:2px 0 4px;transition:opacity .2s}
+.where{flex:none;display:flex;justify-content:center;align-items:center;gap:7px;min-height:22px;font:600 .72em/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--muted);opacity:.8;margin:2px 0 4px;transition:opacity .2s}
 .active{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .active::-webkit-scrollbar{display:none}
 .clear{flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px 0 12px;border-radius:15px;border:0;background:var(--accent);color:#fff;font-weight:600;font-size:.78em}
@@ -132,22 +132,28 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .cover.pic .cap{background:linear-gradient(rgba(0,0,0,.45),transparent 30%,transparent 48%,rgba(0,0,0,.72))}
 .cap i{font:700 calc(var(--s)*.042)/1.2 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.16em;opacity:.85}
 .cap b{font:800 calc(var(--s)*.1)/1.03 var(--display);letter-spacing:-.025em;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 8px rgba(0,0,0,.18)}
-.mark{position:absolute;left:50%;top:calc(45% - var(--s)/2 - 24px);width:40px;margin-left:-20px;text-align:center;font:600 .78em/1 var(--sans);letter-spacing:.04em;color:var(--muted);pointer-events:none;will-change:transform,opacity}
+.wl{position:relative;display:grid;width:22px;height:22px;border-radius:11px;overflow:hidden;background:var(--tint);color:var(--accent);font:700 1.15em/1 var(--sans)}
+.wl:empty{display:none}
+.wl b{grid-area:1/1;display:grid;place-items:center}
 .flow{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;z-index:3000;-webkit-overflow-scrolling:touch}
 .flow::-webkit-scrollbar{display:none}
 .track{position:relative;height:100%}
 .snap{position:absolute;top:0;width:2px;height:1px;scroll-snap-align:center}
 .scrub{position:relative;align-self:center;width:min(520px,calc(100% - 44px));height:44px;flex:none;touch-action:none;user-select:none;-webkit-user-select:none}
-.scrub::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:var(--line);transition:opacity .2s}
-.scrub .knob{position:absolute;top:50%;left:0;width:56px;height:6px;margin-top:-3px;border-radius:3px;background:var(--muted);transition:opacity .2s}
-.scrub .letters{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;opacity:0;transform:scaleX(.9) scaleY(.3);transition:opacity .2s,transform .38s cubic-bezier(.2,1.25,.3,1);pointer-events:none}
-.scrub.open .letters{opacity:1;transform:none}
-.scrub.open .knob,.scrub.open::before{opacity:0}
-.scrub .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.13))}
+.scrub::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:var(--line);transition:opacity .25s .3s}
+.scrub .knob{position:absolute;top:50%;left:0;width:56px;height:6px;margin-top:-3px;border-radius:3px;background:var(--muted);transition:opacity .25s .3s}
+.scrub.open .knob,.scrub.open::before{opacity:0;transition:opacity .12s}
+.scrub .letters{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;pointer-events:none}
+.scrub .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.13));
+transform-origin:50% 50%;transform:scale(.97,.1);opacity:0;transition:transform .34s cubic-bezier(.45,0,.2,1) .1s,opacity .14s .34s}
+.scrub.open .shape{transform:none;opacity:1;transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .1s}
+.scrub .letters a span{display:block;opacity:0;scale:.2;transition:opacity .16s,scale .22s cubic-bezier(.5,0,.75,0);transition-delay:var(--d,0s)}
+.scrub.open .letters a span{opacity:1;scale:1;transition:opacity .2s,scale .5s cubic-bezier(.2,1.7,.4,1);transition-delay:var(--d,0s)}
 .scrub .shape path{fill:var(--card);stroke:var(--line);stroke-width:1}
 .scrub .letters a{position:relative;flex:1;max-width:30px;display:grid;place-items:center;height:30px;border-radius:15px;font:700 .72em/1 var(--sans);text-decoration:none;color:var(--accent);transform-origin:50% 100%;transition:transform .42s cubic-bezier(.2,1.5,.35,1),background .15s,color .15s}
 .scrub.mag .letters a{transition:background .15s,color .15s}
-.scrub .sel{position:absolute;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.2);transition:transform .2s cubic-bezier(.2,.9,.3,1.05);pointer-events:none}
+.scrub .sel{position:absolute;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.2);opacity:0;transition:transform .2s cubic-bezier(.2,.9,.3,1.05),opacity .15s;pointer-events:none}
+.scrub.open .sel{opacity:1}
 .scrub .letters a.on{color:var(--accent)}
 .scrub .letters.lit a.on{color:#fff}
 .scrub .letters a.off{color:var(--muted);opacity:.35}
@@ -166,7 +172,7 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .tx{min-width:0}
 .tx i{display:block;font:700 .62em/1.4 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
 .tx b{display:block;font:650 1em/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stage.lvd .cover,.stage.lvd .mark,.stage.lvd .flow{visibility:hidden}
+.stage.lvd .cover,.stage.lvd .flow{visibility:hidden}
 .listing .where{display:none}
 .listing .list{padding-right:44px}
 /* in list view the letter bar stands on the right edge: the same element, turned and mirrored so A sits at the top
@@ -392,8 +398,7 @@ all.forEach(c=>{c.hidden=!vis.includes(c)});
 const vs=new Set(vis.map(c=>c.dataset.slug));rows.forEach(r=>{r.hidden=!vs.has(r.dataset.slug)});lrows=rows.filter(r=>!r.hidden);
 heads.forEach(h=>{h.hidden=!lrows.some(r=>r.dataset.letter===h.dataset.letter)});
 marks.forEach(m=>m.remove());marks=[];pos=[];let p=0,prev=null;
-vis.forEach(c=>{const L=c.dataset.letter;if(prev!==null&&L!==prev)p+=.85;
-if(L!==prev){const m=document.createElement('span');m.className='mark';m.textContent=L;m._p=p-.92;stage.insertBefore(m,flow);marks.push(m)}
+vis.forEach(c=>{const L=c.dataset.letter;
 pos.push(p);p+=1;prev=L});
 const cw=flow.clientWidth;track.style.width=pos[pos.length-1]*step+cw+'px';track.innerHTML='';
 pos.forEach(q=>{const s=document.createElement('span');s.className='snap';s.style.left=q*step+cw/2-1+'px';track.appendChild(s)});
@@ -408,7 +413,13 @@ c.style.transform='translateX('+X(o).toFixed(1)+'px) perspective(1100px) transla
 c.style.zIndex=1000-Math.round(a*100);c.style.visibility=a>7?'hidden':'';if(a<bd){bd=a;best=i}});
 marks.forEach(m=>{const o=m._p-f;m.style.transform='translateX('+X(o).toFixed(1)+'px)';m.style.opacity=Math.max(0,1-Math.abs(o)*.42).toFixed(2)});
 if(!LV){const max=flow.scrollWidth-flow.clientWidth;knob.style.transform='translateX('+((max>0?flow.scrollLeft/max:0)*(bar.clientWidth-knob.offsetWidth)).toFixed(1)+'px)'}
-if(best!==cur){cur=best;where.textContent=(cur+1)+' of '+vis.length;ss.set('hv-pos',vis[cur].dataset.slug);if(!down&&!anim&&!bar.classList.contains('mag'))sync()}}
+if(best!==cur){cur=best;setWhere();ss.set('hv-pos',vis[cur].dataset.slug);if(!down&&!anim&&!bar.classList.contains('mag'))sync()}}
+// counter under the covers: current letter rolls up or down as you cross into another letter
+const wl=where.querySelector('.wl'),wn=where.querySelector('.wn');let wL='';
+function setWhere(){const c=vis[cur];if(!c)return;wn.textContent=(cur+1)+' of '+vis.length;const L=c.dataset.letter;if(L===wL)return;
+const dir=L>wL?1:-1,old=wl.lastChild,b=document.createElement('b');b.textContent=L;[...wl.children].forEach(x=>{if(x!==old)x.remove()});wl.appendChild(b);
+if(old&&wL&&!reduce){old.animate([{transform:'none',opacity:1},{transform:'translateY('+(-dir*90)+'%)',opacity:0}],{duration:220,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).onfinish=()=>old.remove();
+b.animate([{transform:'translateY('+(dir*90)+'%)',opacity:0},{transform:'none',opacity:1}],{duration:DUR,easing:EASE})}else if(old)old.remove();wL=L}
 function sync(){if(!vis[cur])return;const L=vis[cur].dataset.letter;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.l===L));draw()}
 
 function refilter(){if(LV){const was=new Set(lrows);layout(vis[cur]&&vis[cur].dataset.slug);lscroll();
@@ -458,9 +469,13 @@ function pick(x){let best=null,d=1e9;const L=edge();[...strip.querySelectorAll('
 if(best&&best.dataset.l!==picked){picked=best.dataset.l;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a===best));draw();jump(vis.findIndex(c=>c.dataset.letter===picked))}}
 function jump(i){if(!LV){go(i);return}const r=lrows[i];if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})}
 const ax=e=>LV?e.clientY:e.clientX,edge=()=>{const r=strip.getBoundingClientRect();return LV?r.top:r.left};
-bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);bar.classList.add('open');try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(ax(e));if(!reduce)mag(ax(e))});
+// opening ripples out from the letter under the finger; closing folds the far letters in first, towards the chosen one
+function ripple(opening){const as=[...strip.querySelectorAll('a')],i0=Math.max(0,as.indexOf(strip.querySelector('a.on'))),m=Math.max(i0,as.length-1-i0);
+as.forEach((a,i)=>{const k=Math.abs(i-i0);a.style.setProperty('--d',(opening?k*12:(m-k)*6)+'ms')})}
+bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(ax(e));
+if(!bar.classList.contains('open')){ripple(true);bar.classList.add('open')}if(!reduce)mag(ax(e))});
 bar.addEventListener('pointermove',e=>{if(down){pick(ax(e));if(!reduce)mag(ax(e))}});
-const end=()=>{if(!down)return;down=false;unmag();clearTimeout(timer);timer=setTimeout(()=>bar.classList.remove('open'),900)};
+const end=()=>{if(!down)return;down=false;unmag();clearTimeout(timer);timer=setTimeout(()=>{ripple(false);bar.classList.remove('open')},650)};
 bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);bar.addEventListener('click',e=>e.preventDefault());
 
 function fly(el,rect,rad,bare){const r=rect||el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');d.className='fly';
@@ -495,7 +510,7 @@ box=(r,rad)=>({x:r.left,y:r.top,w:r.width,h:r.height,r:rad}),
 seen=(el,R)=>{const r=el.getBoundingClientRect();return r.bottom>R.top&&r.top<R.bottom&&r.right>R.left&&r.left<R.right};
 function lknob(){const max=list.scrollHeight-list.clientHeight;knob.style.transform='translateX('+((max>0?list.scrollTop/max:0)*(bar.clientWidth-knob.offsetWidth)).toFixed(1)+'px)'}
 function lscroll(){lknob();if(Math.abs(list.scrollTop-lset)<1)return;lset=-1;const y=list.scrollTop+hh()+2;let i=lrows.findIndex(r=>r.offsetTop+r.offsetHeight>y);if(i<0)i=lrows.length-1;
-if(i>=0&&i!==cur){cur=i;where.textContent=(cur+1)+' of '+vis.length;ss.set('hv-pos',vis[cur].dataset.slug);if(!down&&!bar.classList.contains('mag'))sync()}}
+if(i>=0&&i!==cur){cur=i;setWhere();ss.set('hv-pos',vis[cur].dataset.slug);if(!down&&!bar.classList.contains('mag'))sync()}}
 function place(slug){const r=rowOf(slug);if(!r||r.hidden)return;list.scrollTop=r.offsetTop-hh();lset=list.scrollTop;lknob()}
 let lq=0;list.addEventListener('scroll',()=>{if(!lq)lq=requestAnimationFrame(()=>{lq=0;lscroll()})},{passive:true});
 function openRow(row){const s=row.dataset.slug,href=row.getAttribute('href');ss.set('hv-pos',s);if(reduce){location.href=href;return}
@@ -705,7 +720,7 @@ def index(recipes):
 <div class="stage"><span class="probe"></span>{''.join(cover(i, s, r) for i, (s, r) in enumerate(items))}
 <div class="flow"><div class="track"></div></div>
 <div class="list" hidden><div class="lw">{''.join(rows)}</div></div></div>
-<div class="where" aria-live="polite"></div>
+<div class="where"><span class="wl" aria-hidden="true"></span><span class="wn" aria-live="polite"></span></div>
 <nav class="scrub" aria-label="Jump to letter"><span class="knob"></span><div class="letters"></div></nav>
 <div class="sheet" hidden role="dialog" aria-label="Settings">
 <section><h3>Theme colour</h3><div class="swatches">{swatches}</div></section>
