@@ -1,0 +1,59 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Garbanzo Bean Chocolate Cake",
+  "description": "A moist chocolate cake (or cupcakes) made by blending garbanzo beans with eggs and melted chocolate, topped with chocolate frosting.",
+  "recipeCategory": "Dessert",
+  "recipeCuisine": "American",
+  "keywords": "chocolate cake, garbanzo beans, chickpeas, cupcakes",
+  "cookTime": "PT45M",
+  "recipeYield": "1 9x13-inch cake or cupcakes",
+  "recipeIngredient": [
+    "1 1/2 cups semi-sweet or dark chocolate chips",
+    "2 cans (15 oz each) garbanzo beans, drained and rinsed",
+    "6 eggs",
+    "1 1/2 cups sugar",
+    "2 Tbsp cocoa powder",
+    "1 Tbsp lemon juice",
+    "1 1/2 tsp baking powder",
+    "3/4 tsp baking soda",
+    "1 tsp vanilla",
+    "Chocolate frosting"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Preheat and prep",
+      "text": "Preheat the oven to 350°F. Grease and flour a 9x13-inch baking pan."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Melt the chocolate",
+      "text": "In a small bowl, melt 1 1/2 cups chocolate chips in the microwave for about 2 minutes, stirring frequently until smooth."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Blend beans and eggs",
+      "text": "In a blender, blend 2 cans (15 oz each) drained and rinsed garbanzo beans with 6 eggs until creamy."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Finish the batter",
+      "text": "Add 1 1/2 cups sugar, 2 Tbsp cocoa powder, 1 Tbsp lemon juice, 1 1/2 tsp baking powder, 3/4 tsp baking soda, 1 tsp vanilla and the melted chocolate, and blend well. If your blender isn't big enough, pour into a bowl to mix."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Bake",
+      "text": "Pour the batter into the prepared pan and bake at 350°F for about 40 to 45 minutes, until a toothpick in the center comes out with moist crumbs. Do not overbake."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Frost",
+      "text": "Cool completely, then frost with chocolate frosting."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "For cupcakes, bake 20 to 25 minutes."
+    }
+  ]
+}
