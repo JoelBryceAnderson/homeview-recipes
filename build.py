@@ -156,7 +156,9 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .list[hidden],.row[hidden],.lh[hidden]{display:none}
 .lw{max-width:640px;margin:0 auto}
 .lh{position:sticky;top:0;z-index:1;margin:0;padding:10px 6px 5px;font:700 .72em/1 var(--sans);letter-spacing:.12em;color:var(--accent);background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-.row{display:flex;align-items:center;gap:14px;min-height:68px;padding:8px 6px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);-webkit-tap-highlight-color:transparent}
+.row{display:flex;align-items:center;gap:14px;min-height:68px;padding:8px 6px;color:var(--ink);text-decoration:none;position:relative;-webkit-tap-highlight-color:transparent}
+.row::before{content:"";position:absolute;left:72px;right:0;bottom:0;height:1px;background:var(--line);transform-origin:0 50%;transition:transform .5s cubic-bezier(.2,.9,.25,1) var(--dd,0s)}
+.list.pre .row::before{transform:scaleX(0);transition-duration:.16s;transition-delay:0s}
 .row:active{background:var(--tint)}
 .row::after{content:"›";flex:none;margin-left:auto;font-size:1.5em;line-height:1;color:var(--muted)}
 .th{position:relative;flex:none;width:52px;height:52px;border-radius:10px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
@@ -165,6 +167,16 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .tx i{display:block;font:700 .62em/1.4 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
 .tx b{display:block;font:650 1em/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stage.lvd .cover,.stage.lvd .mark,.stage.lvd .flow{visibility:hidden}
+.listing .where{display:none}
+.listing .list{padding-right:44px}
+/* in list view the letter bar stands on the right edge: the same element, turned and mirrored so A sits at the top
+   and the magnifying bulge opens to the left; each letter is turned back upright */
+.listing .scrub{position:fixed;margin:0;z-index:4200;transform-origin:0 50%;transform:rotate(90deg) scaleY(-1)}
+.listing .scrub .letters a span{display:block;transform:rotate(90deg) scaleY(-1)}
+.rail{position:fixed;left:0;top:0;width:100%;height:100%;z-index:4500;pointer-events:none;overflow:visible}
+.rail path{fill:none;stroke-linecap:round}
+.rail .t{stroke:var(--line);stroke-width:4}
+.rail .k{stroke:var(--muted);stroke-width:6}
 .ghost{position:fixed;z-index:9000;pointer-events:none;overflow:hidden;border-radius:18px;transform-origin:50% 50%;will-change:transform;box-shadow:0 10px 30px rgba(0,0,0,.22)}
 /* settings sheet */
 .sheet{position:fixed;top:62px;right:14px;width:min(330px,calc(100% - 28px));background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 14px 44px rgba(0,0,0,.26);padding:14px 16px 16px;z-index:5000}
@@ -385,7 +397,7 @@ if(L!==prev){const m=document.createElement('span');m.className='mark';m.textCon
 pos.push(p);p+=1;prev=L});
 const cw=flow.clientWidth;track.style.width=pos[pos.length-1]*step+cw+'px';track.innerHTML='';
 pos.forEach(q=>{const s=document.createElement('span');s.className='snap';s.style.left=q*step+cw/2-1+'px';track.appendChild(s)});
-strip.innerHTML='<svg class="shape" aria-hidden="true"><path/></svg><span class="sel"></span>';const have=new Set(vis.map(c=>c.dataset.letter));[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',...(have.has('#')?['#']:[])].forEach(L=>{const a=document.createElement('a');a.href='#';a.dataset.l=L;a.textContent=L;if(!have.has(L)){a.className='off';a.setAttribute('aria-disabled','true')}strip.appendChild(a)});
+strip.innerHTML='<svg class="shape" aria-hidden="true"><path/></svg><span class="sel"></span>';const have=new Set(vis.map(c=>c.dataset.letter));[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',...(have.has('#')?['#']:[])].forEach(L=>{const a=document.createElement('a');a.href='#';a.dataset.l=L;a.innerHTML='<span>'+L+'</span>';if(!have.has(L)){a.className='off';a.setAttribute('aria-disabled','true')}strip.appendChild(a)});
 let i=slug?vis.findIndex(c=>c.dataset.slug===slug):0;if(i<0)i=0;
 flow.style.scrollSnapType='none';flow.scrollLeft=pos[i]*step;requestAnimationFrame(()=>{flow.style.scrollSnapType=''});
 cur=-1;render();sync();if(LV)lknob()}
@@ -422,7 +434,7 @@ flow.addEventListener('scroll',()=>{if(anim)return;if(!rq)rq=requestAnimationFra
 flow.addEventListener('touchstart',()=>{touching=true;stop();clearTimeout(idle)},{passive:true});
 ['touchend','touchcancel'].forEach(ev=>flow.addEventListener(ev,()=>{touching=false;clearTimeout(idle);idle=setTimeout(settle,SETTLE_WAIT)},{passive:true}));
 flow.addEventListener('wheel',stop,{passive:true});
-addEventListener('resize',()=>{layout(vis[cur]&&vis[cur].dataset.slug);draw()});
+addEventListener('resize',()=>{vplace();layout(vis[cur]&&vis[cur].dataset.slug);draw()});
 
 const AMAX=30,sh={x:0,a:0,vx:0,va:0,tx:0,ta:0};let sraf=0;
 function shape(w,h,bx,amp){const r=h/2,sg=48,y=x=>{const q=(x-bx)/sg;return -amp*Math.exp(-q*q)};let d='M'+r+' '+h+'C'+(r*.08)+' '+h+' '+(r*.08)+' '+y(r).toFixed(2)+' '+r+' '+y(r).toFixed(2);
@@ -440,13 +452,14 @@ function spring(){sh.vx=sh.vx*.6+(sh.tx-sh.x)*.24;sh.x+=sh.vx;sh.va=sh.va*.62+(s
 if(Math.abs(sh.tx-sh.x)+Math.abs(sh.vx)+Math.abs(sh.ta-sh.a)+Math.abs(sh.va)>.05){sraf=requestAnimationFrame(spring);return}
 sraf=0;sh.x=sh.tx;sh.a=sh.ta;sh.vx=sh.va=0;if(!sh.ta){bar.classList.remove('mag');where.style.opacity='';if(!anim){sync();return}}draw()}
 const kick=()=>{if(!sraf)sraf=requestAnimationFrame(spring)};
-function mag(x){const on=strip.querySelector('a.on:not(.off)'),rx=on?on.offsetLeft+on.offsetWidth/2:x-strip.getBoundingClientRect().left;if(!bar.classList.contains('mag')){sh.x=rx}sh.tx=rx;sh.ta=AMAX;bar.classList.add('mag');where.style.opacity='0';kick()}
+function mag(x){const on=strip.querySelector('a.on:not(.off)'),rx=on?on.offsetLeft+on.offsetWidth/2:x-edge();if(!bar.classList.contains('mag')){sh.x=rx}sh.tx=rx;sh.ta=AMAX;bar.classList.add('mag');where.style.opacity='0';kick()}
 function unmag(){sh.ta=0;kick()}
-function pick(x){let best=null,d=1e9;const L=strip.getBoundingClientRect().left;[...strip.querySelectorAll('a:not(.off)')].forEach(a=>{const m=Math.abs(L+a.offsetLeft+a.offsetWidth/2-x);if(m<d){d=m;best=a}});
+function pick(x){let best=null,d=1e9;const L=edge();[...strip.querySelectorAll('a:not(.off)')].forEach(a=>{const m=Math.abs(L+a.offsetLeft+a.offsetWidth/2-x);if(m<d){d=m;best=a}});
 if(best&&best.dataset.l!==picked){picked=best.dataset.l;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a===best));draw();jump(vis.findIndex(c=>c.dataset.letter===picked))}}
 function jump(i){if(!LV){go(i);return}const r=lrows[i];if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})}
-bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);bar.classList.add('open');try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(e.clientX);if(!reduce)mag(e.clientX)});
-bar.addEventListener('pointermove',e=>{if(down){pick(e.clientX);if(!reduce)mag(e.clientX)}});
+const ax=e=>LV?e.clientY:e.clientX,edge=()=>{const r=strip.getBoundingClientRect();return LV?r.top:r.left};
+bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);bar.classList.add('open');try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(ax(e));if(!reduce)mag(ax(e))});
+bar.addEventListener('pointermove',e=>{if(down){pick(ax(e));if(!reduce)mag(ax(e))}});
 const end=()=>{if(!down)return;down=false;unmag();clearTimeout(timer);timer=setTimeout(()=>bar.classList.remove('open'),900)};
 bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);bar.addEventListener('click',e=>e.preventDefault());
 
@@ -491,12 +504,25 @@ list.addEventListener('click',e=>{const r=e.target.closest('.row');if(!r)return;
 function ghost(c,r){const d=document.createElement('div');d.className='ghost front'+(c.classList.contains('pic')?' pic':'');
 d.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px';
 [...c.children].forEach(n=>{if(n.tagName!=='TEMPLATE')d.appendChild(n.cloneNode(true))});document.body.appendChild(d);return d}
-function vstate(){vbtn.classList.toggle('lv',LV);vbtn.setAttribute('aria-label',LV?'Show as covers':'Show as list')}
-function setView(v){if(v===LV)return;if(vfin)vfin();LV=v;if(LV)st.view='list';else delete st.view;save();vstate();(LV?toList:toCovers)()}
+function vplace(){const b=bar.style;if(!LV){b.top=b.left=b.width='';return}const t=document.querySelector('.masthead').getBoundingClientRect().bottom+12;
+b.top=(t-22)+'px';b.left=(innerWidth-24)+'px';b.width=Math.max(160,innerHeight-t-76)+'px'}
+function vstate(){vbtn.classList.toggle('lv',LV);vbtn.setAttribute('aria-label',LV?'Show as covers':'Show as list');document.body.classList.toggle('listing',LV);vplace()}
+function geom(){const r=bar.getBoundingClientRect(),k=knob.getBoundingClientRect();
+return LV?{v:1,x:r.left+r.width/2,a:r.top,b:r.bottom,k:k.top+k.height/2}:{v:0,y:r.top+r.height/2,a:r.left,b:r.right,k:k.left+k.width/2}}
+// the letter bar's track and knob slide along one path: the bottom edge, round the bottom-right corner, up the right edge
+let rfin=null;
+function rail(g0,g1){if(reduce||g0.v===g1.v)return;const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,R=Math.max(0,Math.min(44,y-v.b,xv-h.b)),
+sv=xv-R-x0+Math.PI*R/2,sH=x=>x-x0,sV=q=>sv+(y-R-q),d='M'+x0+' '+y+'H'+(xv-R)+'A'+R+' '+R+' 0 0 0 '+xv+' '+(y-R)+'V'+Math.min(v.a,y-R),
+tr=[[sH(h.a)+2,sH(h.b)-2],[sV(v.b)+2,sV(v.a)-2]],kn=[sH(h.k),sV(v.k)],s=document.createElementNS('http://www.w3.org/2000/svg','svg');
+s.setAttribute('class','rail');s.innerHTML='<path class="t" d="'+d+'"/><path class="k" d="'+d+'"/>';document.body.appendChild(s);
+const i=g0.v?1:0,j=1-i,seg=(a,b)=>({strokeDasharray:(b-a).toFixed(1)+'px 100000px',strokeDashoffset:(-a).toFixed(1)+'px'}),o={duration:DUR+200,easing:EASE,fill:'forwards'};
+bar.style.opacity='0';s.firstChild.animate([seg(...tr[i]),seg(...tr[j])],o);const an=s.lastChild.animate([seg(kn[i]-25,kn[i]+25),seg(kn[j]-25,kn[j]+25)],o);
+let done=false;const f=rfin=()=>{if(done)return;done=true;rfin=null;s.remove();bar.style.opacity=''};an.onfinish=f;setTimeout(f,DUR+700)}
+function setView(v){if(v===LV)return;if(vfin)vfin();if(rfin)rfin();const g0=geom();LV=v;if(LV)st.view='list';else delete st.view;save();(LV?toList:toCovers)();rail(g0,geom())}
 // covers -> list: the centre cover shrinks into its row's thumbnail while the rest of the flow falls away and rows cascade in
 function toList(){stop();const c=vis[cur],r0=c&&c.getBoundingClientRect(),R=stage.getBoundingClientRect(),
 was=all.filter(x=>!x.hidden&&x!==c&&x.style.visibility!=='hidden'&&seen(x,R));
-stage.classList.add('lv');list.hidden=false;if(c)place(c.dataset.slug);
+vstate();if(!reduce)list.classList.add('pre');stage.classList.add('lv');list.hidden=false;if(c)place(c.dataset.slug);
 if(reduce||!c){stage.classList.add('lvd');return}
 const row=rowOf(c.dataset.slug),th=row.querySelector('.th'),r1=th.getBoundingClientRect(),d=ghost(c,r0),cap=d.querySelector('.cap'),kill=[];
 c.style.opacity='0';th.style.opacity='0';
@@ -505,26 +531,30 @@ if(cap)kill.push(cap.animate([{opacity:1},{opacity:0}],{duration:160,fill:'forwa
 was.forEach(x=>kill.push(x.animate([{opacity:1},{opacity:0,transform:x.style.transform+' scale(.82)'}],{duration:240,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'})));
 marks.forEach(m=>kill.push(m.animate([{opacity:+m.style.opacity||0},{opacity:0}],{duration:180,fill:'forwards'})));
 const LR=list.getBoundingClientRect(),ci=lrows.indexOf(row);
-lrows.forEach((r,i)=>{if(!seen(r,LR))return;const me=r===row;
+// dividers wait until the outgoing covers have cleared, then draw in left to right
+lrows.forEach((r,i)=>{if(!seen(r,LR)){r.style.setProperty('--dd','0s');return}const me=r===row;r.style.setProperty('--dd',(200+Math.min(280,Math.abs(i-ci)*40))+'ms');
 (me?r.querySelector('.tx'):r).animate([{opacity:0,transform:me?'translateX(-14px)':'translateY('+(i<ci?-18:18)+'px)'},{opacity:1,transform:'none'}],
 {duration:DUR,delay:me?110:Math.min(320,50+Math.abs(i-ci)*45),easing:EASE,fill:'backwards'})});
-heads.forEach(h=>{if(!h.hidden&&seen(h,LR))h.animate([{opacity:0},{opacity:1}],{duration:260,delay:80,fill:'backwards'})});
+heads.forEach(h=>{if(!h.hidden&&seen(h,LR))h.animate([{opacity:0},{opacity:1}],{duration:220,delay:230,fill:'backwards'})});
+void list.offsetWidth;list.classList.remove('pre');
 let done=false;const f=vfin=()=>{if(done)return;done=true;vfin=null;stage.classList.add('lvd');c.style.opacity='';th.style.opacity='';d.remove();kill.forEach(a=>a.cancel())};
 kill[0].onfinish=f;setTimeout(f,DUR+400)}
 // list -> covers: the top row's thumbnail grows back into the centre cover and its neighbours fan out around it
 function toCovers(){const c0=vis[cur],rw=c0&&rowOf(c0.dataset.slug),th=rw&&rw.querySelector('.th'),LR=list.getBoundingClientRect(),
-r0=th&&seen(th,LR)?th.getBoundingClientRect():null,out=lrows.filter(r=>seen(r,LR)).concat(heads.filter(h=>!h.hidden&&seen(h,LR)));
-stage.classList.remove('lvd');layout(c0&&c0.dataset.slug);
-const shut=()=>{list.hidden=true;stage.classList.remove('lv')};
+r0=th&&seen(th,LR)?th.getBoundingClientRect():null,out=lrows.filter(r=>seen(r,LR)),hs=heads.filter(h=>!h.hidden&&seen(h,LR));
+vstate();stage.classList.remove('lvd');layout(c0&&c0.dataset.slug);
+const shut=()=>{list.hidden=true;list.classList.remove('pre');stage.classList.remove('lv')};
 const c=vis[cur];if(reduce||!c){shut();return}
 const r1=c.getBoundingClientRect(),R=stage.getBoundingClientRect(),kill=[];let d=null;
 if(r0){d=ghost(c,r1);c.style.opacity='0';th.style.opacity='0';const cap=d.querySelector('.cap');
 kill.push(d.animate(arc(box(r1),box(r0,10),box(r1,18),24),{duration:DUR,easing:EASE,fill:'forwards'}));
 if(cap)cap.animate([{opacity:0},{opacity:1}],{duration:220,delay:DUR*.45,fill:'backwards'})}
 else c.animate([{opacity:0,transform:c.style.transform+' scale(.82)'},{opacity:1,transform:c.style.transform}],{duration:DUR,delay:80,easing:EASE,fill:'backwards'});
+list.classList.add('pre');hs.forEach(h=>kill.push(h.animate([{opacity:1},{opacity:0}],{duration:120,fill:'forwards'})));
+where.animate({opacity:[0,.8]},{duration:260,delay:260,fill:'backwards'});
 out.forEach((r,i)=>kill.push(r.animate([{opacity:1},{opacity:0,transform:'translateY(10px) scale(.98)'}],{duration:200,delay:Math.min(i*18,120),easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'})));
 vis.forEach((x,i)=>{if(x===c||x.style.visibility==='hidden'||!seen(x,R))return;
-x.animate([{opacity:0,transform:x.style.transform+' scale(.82)'},{opacity:1,transform:x.style.transform}],{duration:DUR,delay:100+Math.abs(i-cur)*55,easing:EASE,fill:'backwards'})});
+x.animate([{opacity:0,transform:x.style.transform+' scale(.82)'},{opacity:1,transform:x.style.transform}],{duration:DUR,delay:140+Math.abs(i-cur)*55,easing:EASE,fill:'backwards'})});
 marks.forEach(m=>m.animate([{opacity:0},{opacity:+m.style.opacity||0}],{duration:260,delay:200,fill:'backwards'}));
 let done=false;const f=vfin=()=>{if(done)return;done=true;vfin=null;shut();c.style.opacity='';if(th)th.style.opacity='';if(d)d.remove();kill.forEach(a=>a.cancel())};
 if(d)kill[0].onfinish=f;setTimeout(f,d?DUR+400:340)}
