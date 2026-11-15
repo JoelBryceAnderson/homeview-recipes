@@ -106,6 +106,7 @@ body.idx{max-width:none;height:100vh;height:100dvh;overflow:hidden;padding:12px 
 .masthead{display:flex;align-items:center;gap:10px;padding:0 16px 0 22px;min-height:44px}
 .masthead h1{font-size:1.6em;margin:0}
 .where{flex:none;display:flex;justify-content:center;align-items:center;gap:7px;min-height:22px;font:600 .72em/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--muted);opacity:.8;margin:2px 0 4px;transition:opacity .2s}
+.active.ovf{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent)}
 .active{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .active::-webkit-scrollbar{display:none}
 .clear{flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px 0 12px;border-radius:15px;border:0;background:var(--accent);color:#fff;font-weight:600;font-size:.78em}
@@ -208,9 +209,6 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .fbtn.on{background:var(--accent);color:#fff}
 .sheet .ver{margin:14px 0 0;text-align:center;font-size:.7em;color:var(--muted);font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .sheet section[hidden]{display:none}
-.sheet .hint{margin:.5em 0 0;font-size:.74em;color:var(--muted)}
-.toast{position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:6000;width:max-content;max-width:calc(100% - 40px);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.26);padding:12px 18px;text-align:center;font:650 .95em/1.3 var(--sans);pointer-events:none}
-.toast small{display:block;margin-top:3px;font-weight:500;font-size:.86em;color:var(--muted)}
 /* motion */
 .fly{position:fixed;z-index:9000;pointer-events:none;perspective:1800px;transform-origin:50% 50%;will-change:transform;-webkit-box-reflect:below 6px linear-gradient(transparent 74%,rgba(255,255,255,.16))}
 :root.tween,:root.tween *,:root.tween *::before,:root.tween *::after{transition:background-color .45s cubic-bezier(.3,0,.2,1),color .45s cubic-bezier(.3,0,.2,1),border-color .45s,box-shadow .45s,fill .45s,stroke .45s,opacity .2s!important}
@@ -388,6 +386,10 @@ const ms=Math.min(520,240+y0*.25),t0=performance.now();let gone=false;const leav
 const tick=t=>{const k=Math.min(1,(t-t0)/ms),ez=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;scrollTo(0,y0*(1-ez));if(k<1)requestAnimationFrame(tick);else leave()};
 requestAnimationFrame(tick);setTimeout(leave,ms+300)}));
 addEventListener('pageshow',e=>{if(e.persisted)document.body.getAnimations().forEach(x=>x.cancel())});
+// keep the screen awake while a recipe is open; the lock drops when the page is hidden, so take it again on return
+let lock=null;const wake=()=>{if(!navigator.wakeLock||lock||document.visibilityState!=='visible')return;
+navigator.wakeLock.request('screen').then(l=>{lock=l;l.addEventListener('release',()=>{lock=null})}).catch(()=>{})};
+wake();document.addEventListener('visibilitychange',wake);addEventListener('pageshow',wake);addEventListener('pointerdown',wake,{passive:true});
 })();
 """
 
@@ -395,7 +397,7 @@ FLOW_JS = """
 (()=>{%MOTION%
 const root=document.documentElement,KEY='hv-recipes';
 let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(_){}
-if(!Array.isArray(st.filters))st.filters=st.filter?[st.filter]:[];delete st.filter;
+delete st.shake;delete st.egg;delete st.noMotion;if(!Array.isArray(st.filters))st.filters=st.filter?[st.filter]:[];delete st.filter;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}};
 const stage=document.querySelector('.stage'),flow=stage.querySelector('.flow'),track=flow.querySelector('.track'),probe=stage.querySelector('.probe'),
 all=[...stage.querySelectorAll('.cover')],bar=document.querySelector('.scrub'),knob=bar.querySelector('.knob'),strip=bar.querySelector('.letters'),
@@ -612,11 +614,12 @@ vbtn.addEventListener('click',()=>setView(!LV));
 function apply(){const set=(k,v)=>{if(v)root.dataset[k]=v;else delete root.dataset[k]};set('accent',st.accent);set('theme',st.theme);
 document.querySelectorAll('.sheet [data-accent]').forEach(b=>b.setAttribute('aria-pressed',String((st.accent||'')===b.dataset.accent)));
 document.querySelectorAll('.sheet [data-mode]').forEach(b=>b.setAttribute('aria-pressed',String((st.theme||'')===b.dataset.mode)));
-document.querySelectorAll('.sheet [data-shake]').forEach(b=>b.setAttribute('aria-pressed',String(!!st.shake===!!b.dataset.shake)));
 const F=st.filters;document.querySelectorAll('.sheet [data-cat]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cat?F.includes(b.dataset.cat):!F.length)));
 fbtn.classList.toggle('on',F.length>0);
 const had=new Set([...act.children].map(b=>b.dataset.c));act.innerHTML='';F.forEach(c=>{const b=document.createElement('button');b.className='clear';b.dataset.c=c;b.textContent=c;
-b.setAttribute('aria-label','Remove '+c+' filter');act.appendChild(b);if(!had.has(c)&&!reduce)b.animate([{transform:'scale(.6)',opacity:0},{transform:'none',opacity:1}],{duration:DUR,easing:EASE})})}
+b.setAttribute('aria-label','Remove '+c+' filter');act.appendChild(b);if(!had.has(c)&&!reduce)b.animate([{transform:'scale(.6)',opacity:0},{transform:'none',opacity:1}],{duration:DUR,easing:EASE})});fade()}
+function fade(){act.classList.toggle('ovf',act.scrollLeft+act.clientWidth<act.scrollWidth-2)}
+act.addEventListener('scroll',fade,{passive:true});addEventListener('resize',fade);
 const pairs=[[sheet,gear],[fsheet,fbtn]],btnOf=s=>pairs.find(p=>p[0]===s)[1],anyOpen=()=>pairs.some(p=>!p[0].hidden);
 function openSheet(sh){pairs.forEach(p=>{if(p[0]!==sh)closeSheet(p[0])});apply();sh.hidden=false;const btn=btnOf(sh);btn.setAttribute('aria-expanded','true');if(reduce)return;
 const g=btn.getBoundingClientRect(),s=sh.getBoundingClientRect(),ox=Math.min(s.width-22,g.left+g.width/2-s.left),oy=22,dx=g.left+g.width/2-(s.left+ox),dy=g.top+g.height/2-(s.top+oy),N=12,fr=[];
@@ -634,8 +637,6 @@ pairs.forEach(([sh,btn])=>btn.addEventListener('click',e=>{e.stopPropagation();s
 document.addEventListener('pointerdown',e=>{pairs.forEach(([sh,btn])=>{if(!sh.hidden&&!sh.contains(e.target)&&!btn.contains(e.target))closeSheet(sh)})});
 let tw;function themed(fn){if(reduce){fn();return}clearTimeout(tw);root.classList.add('tween');void root.offsetWidth;fn();tw=setTimeout(()=>root.classList.remove('tween'),520)}
 const onSheet=e=>{const b=e.target.closest('button');if(!b)return;
-if('shake' in b.dataset){if(!b.dataset.shake){st.shake=false;save();unlisten();apply();return}
-enableShake().then(ok=>{if(!ok){st.shake=false;save();apply();toast('Motion access is off.','Allow it in Safari settings to use this.');return}verify()});return}
 if('cat' in b.dataset){const c=b.dataset.cat,F=st.filters;st.filters=!c?[]:F.includes(c)?F.filter(x=>x!==c):[...F,c];save();apply();refilter();return}
 if(!('accent' in b.dataset)&&!('mode' in b.dataset))return;
 const k='accent' in b.dataset?'accent':'theme',v='accent' in b.dataset?b.dataset.accent:b.dataset.mode;if((st[k]||'')===v)return;
@@ -644,36 +645,6 @@ sheet.addEventListener('click',onSheet);fsheet.addEventListener('click',onSheet)
 act.addEventListener('click',e=>{const b=e.target.closest('.clear');if(!b)return;st.filters=st.filters.filter(x=>x!==b.dataset.c);save();apply();refilter()});
 addEventListener('pageshow',e=>{if(e.persisted){document.querySelectorAll('.fly,.ghost').forEach(n=>n.remove());all.forEach(c=>c.style.opacity='');list.querySelectorAll('.th').forEach(t=>t.style.opacity='');
 layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back()}});
-function toast(a,b2,ms){document.querySelectorAll('.toast').forEach(n=>n.remove());const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');
-t.innerHTML='<span></span>'+(b2?'<small></small>':'');t.firstChild.textContent=a;if(b2)t.lastChild.textContent=b2;document.body.appendChild(t);
-if(!reduce)t.animate([{opacity:0,transform:'translate(-50%,-12px) scale(.9)'},{opacity:1,transform:'translate(-50%,0)'}],{duration:DUR,easing:EASE});
-setTimeout(()=>{if(reduce){t.remove();return}t.animate([{opacity:1},{opacity:0,transform:'translate(-50%,-8px)'}],{duration:260,fill:'forwards'}).onfinish=()=>t.remove();setTimeout(()=>t.remove(),700)},ms||2800)}
-const quips=['Why are you shaking your HomeView?','Please put the HomeView down.','Shaken, not stirred.','That is not how timers work.','The recipes are fine. Are you?'];let nq=0,lastShake=0;
-function shook(){const now=Date.now();if(now-lastShake<2500||vis.length<2||anyOpen()||document.querySelector('.fly'))return;lastShake=now;
-let i=cur;while(i===cur)i=Math.floor(Math.random()*vis.length);
-toast(quips[nq++%quips.length],'How about '+vis[i].querySelector('b').textContent+'?');
-if(!reduce)(LV?list:stage).animate([0,-14,12,-9,6,-3,0].map(x=>({transform:'translateX('+x+'px)'})),{duration:520,easing:'ease-out'});
-setTimeout(()=>{if(!LV){go(i);return}const r=rowOf(vis[i].dataset.slug);if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})},reduce?0:380)}
-let spikes=[],pg=null,listening=false;
-let mc=0;function onMotion(e){const g=e.accelerationIncludingGravity,a=g&&g.x!=null?g:e.acceleration;if(!a||a.x==null)return;mc++;
-if(pg){const d=Math.hypot(a.x-pg.x,a.y-pg.y,a.z-pg.z),now=performance.now();
-if(d>7){spikes=spikes.filter(s=>now-s<900);if(!spikes.length||now-spikes[spikes.length-1]>80)spikes.push(now);if(spikes.length>=3){spikes=[];shook()}}}
-pg={x:a.x,y:a.y,z:a.z}}
-function listen(){if(!listening){listening=true;addEventListener('devicemotion',onMotion)}}
-function unlisten(){listening=false;pg=null;removeEventListener('devicemotion',onMotion)}
-const hasMotion='DeviceMotionEvent' in window,needPerm=hasMotion&&typeof DeviceMotionEvent.requestPermission==='function',egg=sheet.querySelector('.shakeopt');
-function enableShake(){if(!hasMotion)return Promise.resolve(false);if(!needPerm){listen();return Promise.resolve(true)}
-return DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted'){listen();return true}return false}).catch(()=>false)}
-egg.hidden=!(st.egg||st.shake)||!!st.noMotion;
-function verify(){const c0=mc;st.shake=true;save();apply();setTimeout(()=>{if(mc>c0){toast('Shake away.','Give it a good jiggle.',2000);return}
-unlisten();st.shake=false;st.noMotion=true;save();apply();toast('This screen can’t feel a thing.','No motion sensor here, so no shaking.');
-if(reduce){egg.hidden=true;return}egg.animate([{opacity:1},{opacity:0,transform:'scale(.96)'}],{duration:260,easing:EASE}).onfinish=()=>{egg.hidden=true}},2000)}
-let taps=0,tapT=0;sheet.querySelector('.ver').addEventListener('click',()=>{if(!egg.hidden)return;const now=Date.now();taps=now-tapT<1500?taps+1:1;tapT=now;
-if(taps>=10){taps=0;if(!hasMotion||st.noMotion){toast('This screen can’t feel a thing.','No motion sensor here.');return}st.egg=true;save();egg.hidden=false;toast('You found a secret.','Shake for a surprise is now in settings.');
-if(!reduce)egg.animate([{opacity:0,transform:'translateY(-8px) scale(.96)'},{opacity:1,transform:'none'}],{duration:DUR,easing:EASE})}
-else if(taps>=6)toast((10-taps)+' more…',null,900)});
-if(hasMotion&&st.shake){listen();if(needPerm){const re=()=>{removeEventListener('touchend',re,true);removeEventListener('click',re,true);enableShake()};
-addEventListener('touchend',re,true);addEventListener('click',re,true)}}
 vstate();apply();if(LV){stage.classList.add('lv','lvd');list.hidden=false}layout(ss.get('hv-pos'));if(LV)place(vis[cur]&&vis[cur].dataset.slug);back();
 })();
 """
@@ -805,8 +776,6 @@ def index(recipes):
 <div class="sheet settings" hidden role="dialog" aria-label="Settings">
 <section><h3>Theme colour</h3><div class="swatches">{swatches}</div></section>
 <section><h3>Appearance</h3><div class="seg">{modes}</div></section>
-<section class="shakeopt" hidden><h3>Shake for a surprise</h3><div class="seg"><button data-shake="" aria-pressed="true">Off</button><button data-shake="1" aria-pressed="false">On</button></div>
-<p class="hint">Shake the screen to land on a random recipe.</p></section>
 <p class="ver">Version {VERSION}</p>
 </div>
 <script>{FLOW_JS}</script>
@@ -842,8 +811,6 @@ def main():
         shutil.copytree(IMAGES, OUT / "images")
     base = site_url()
     (OUT / "index.html").write_text(index(recipes))
-    (OUT / "probe").mkdir()
-    shutil.copy(ROOT / "probe.html", OUT / "probe" / "index.html")
     for slug, r in recipes:
         (OUT / slug).mkdir()
         (OUT / slug / "index.html").write_text(page(r, slug, base))
