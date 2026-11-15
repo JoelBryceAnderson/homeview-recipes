@@ -523,30 +523,33 @@ function fly(el,rect,rad,bare,y){const r=rect||el.getBoundingClientRect(),W=inne
 d.style.cssText='left:0;top:0;width:'+W+'px;height:'+H+'px;perspective:'+(1800*W/r.width).toFixed(0)+'px';
 const s0=r.width/W;d.innerHTML='<div class="flip"><div class="sh" style="border-radius:'+(18/s0).toFixed(1)+'px / '+(18*H/r.height).toFixed(1)+'px;box-shadow:0 '+(14/s0).toFixed(0)+'px '+(40/s0).toFixed(0)+'px rgba(0,0,0,.3)"></div><div class="face front'+(el.classList.contains('pic')?' pic':'')+'"><div class="fc" style="width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px;transform:scale('+W/r.width+','+H/r.height+')"></div></div><div class="face backf"><div class="pg"><div class="in"></div></div></div></div>';
 const front=d.querySelector('.fc');[...el.children].forEach(n=>{if(n.tagName!=='TEMPLATE'&&!(bare&&n.classList.contains('cap')))front.appendChild(n.cloneNode(true))});
+d.querySelectorAll('img').forEach(i=>{i.loading='eager';i.decoding='sync'});
 const inn=d.querySelector('.in');inn.innerHTML=el.querySelector('template').innerHTML;if(y)inn.style.transform='translateY('+(-y)+'px)';
 if(y&&ss.get('hv-mini')){const m=document.createElement('nav'),im=el.querySelector('img');m.className='mini show';m.style.position='absolute';
 m.innerHTML='<div><span class="back">Recipes</span>'+(im?'<img class="thumb" alt="" src="'+im.getAttribute('src')+'">':'')+'<b></b></div>';m.querySelector('b').textContent=el.querySelector('b').textContent;d.querySelector('.pg').appendChild(m)}
 document.body.appendChild(d);
 return{d,flip:d.firstChild,faces:[...d.querySelectorAll('.face')],r:{x:r.left,y:r.top,w:r.width,h:r.height,r:rad||18}}}
 const full=()=>({x:0,y:0,w:innerWidth,h:innerHeight,r:0});
-function morph(o,a,b,r0,r1,lift,done){const fr=arc(full(),a,b,lift),opt={duration:FDUR,easing:FEASE,fill:'forwards'};
-o.d.animate(fr.map(f=>({transform:f.transform,offset:f.offset})),opt);
-o.faces.forEach(x=>x.animate(fr.map(f=>({borderRadius:f.borderRadius,offset:f.offset})),opt));
-// Safari can leave the front face showing (mirrored) after it turns away, so switch each face's visibility explicitly;
-// same duration and easing as the rotation, so the discrete switch lands exactly at 90 degrees
-// Safari applies discrete steps on linear time, so place the switch at the moment the spring passes halfway
+function morph(o,a,b,r0,r1,lift,done,late){const fr=arc(full(),a,b,lift),opt={duration:FDUR,easing:FEASE,fill:'forwards'},an=[];
+an.push(o.d.animate(fr.map(f=>({transform:f.transform,offset:f.offset})),opt));
+o.faces.forEach(x=>an.push(x.animate(fr.map(f=>({borderRadius:f.borderRadius,offset:f.offset})),opt)));
+// Safari can leave the front face showing (mirrored) after it turns away, so switch each face's visibility explicitly.
+// Safari applies discrete steps on linear time, so place the switch at the moment the spring passes halfway (90 degrees)
 const vis2=deg=>deg<90?'visible':'hidden',hf=LIN?%FHALF%:.2,sw=(a,b)=>[{visibility:a,offset:0},{visibility:a,offset:hf},{visibility:b,offset:hf},{visibility:b,offset:1}],lo={duration:FDUR,fill:'forwards'};
-o.faces[0].animate(sw(vis2(r0),vis2(r1)),lo);o.faces[1].animate(sw(vis2(180-r0),vis2(180-r1)),lo);
-let fin=false;const f=()=>{if(fin)return;fin=true;done()};
-o.flip.animate([{transform:'rotateY('+r0+'deg)'},{transform:'rotateY('+r1+'deg)'}],opt).onfinish=f;setTimeout(f,FDUR+400)}
+an.push(o.faces[0].animate(sw(vis2(r0),vis2(r1)),lo),o.faces[1].animate(sw(vis2(180-r0),vis2(180-r1)),lo));
+let fin=false;const f=()=>{if(fin)return;fin=true;done()},rot=o.flip.animate([{transform:'rotateY('+r0+'deg)'},{transform:'rotateY('+r1+'deg)'}],opt);an.push(rot);
+// hold on the first frame until the cover photo copy is decoded, or Safari shows the bare gray card while it decodes
+an.forEach(x=>x.pause());const ims=[...o.d.querySelectorAll('img')];let go=false;
+const play=()=>{if(go)return;go=true;an.forEach(x=>x.play());rot.onfinish=f;setTimeout(f,FDUR+400);if(late)setTimeout(late,Math.max(0,FDUR-200))};
+Promise.all(ims.map(i=>i.decode?i.decode().catch(()=>{}):0)).then(play);setTimeout(play,150)}
 function open(el){ss.set('hv-pos',el.dataset.slug);const href=el.getAttribute('href');if(reduce){location.href=href;return}
 ss.set('hv-open','1');const o=fly(el);el.animate([{opacity:1},{opacity:0}],{duration:200,easing:'ease-out',fill:'forwards'});morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
 function back(){const slug=ss.get('hv-back'),y=+ss.get('hv-y')||0;ss.set('hv-back',null);ss.set('hv-y',null);setTimeout(()=>ss.set('hv-mini',null),0);if(!slug||reduce)return;
 if(LV){const r=rowOf(slug);if(!r||r.hidden)return;const th=r.querySelector('.th'),o=fly(coverOf(slug),th.getBoundingClientRect(),10,true,y);th.style.opacity='0';
 morph(o,full(),o.r,180,0,innerHeight*.06,()=>{th.style.opacity='';o.d.remove()});return}
 const el=vis.find(c=>c.dataset.slug===slug);if(!el)return;
-const o=fly(el,null,0,false,y);el.style.opacity='0';setTimeout(()=>{el.style.opacity='';el.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-in'})},Math.max(0,FDUR-200));
-morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()})}
+const o=fly(el,null,0,false,y);el.style.opacity='0';
+morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()},()=>{el.style.opacity='';el.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-in'})})}
 flow.addEventListener('click',e=>{if(anyOpen())return;const el=document.elementsFromPoint(e.clientX,e.clientY).find(n=>n.classList&&n.classList.contains('cover'));
 if(!el)return;e.preventDefault();const i=vis.indexOf(el);if(i===cur)open(el);else go(i)});
 addEventListener('keydown',e=>{if(anyOpen()){if(e.key==='Escape')closeSheet();return}if(LV)return;
