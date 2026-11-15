@@ -176,10 +176,12 @@ transform-origin:50% 50%;transform:scale(.97,.1);opacity:0;transition:transform 
 .stage.lvd .cover,.stage.lvd .flow{visibility:hidden}
 .listing .where{display:none}
 .listing .list{padding-right:44px}
-/* in list view the letter bar stands on the right edge: the same element, turned and mirrored so A sits at the top
-   and the magnifying bulge opens to the left; each letter is turned back upright */
+/* in list view the bar stands on the right edge as a plain scroll bar: the same element, turned so it runs top to
+   bottom. The A-Z letters stay in cover view only; vertically, under Safari's toolbar, 27 letters don't fit */
 .listing .scrub{position:fixed;margin:0;z-index:4200;transform-origin:0 50%;transform:rotate(90deg) scaleY(-1)}
-.listing .scrub .letters a span{display:block;transform:rotate(90deg) scaleY(-1)}
+.listing .scrub .letters{display:none}
+.listing .scrub .knob{transition:background .15s,height .15s,margin-top .15s}
+.listing .scrub.drag .knob{background:var(--accent);height:10px;margin-top:-5px}
 .rail{position:fixed;left:0;top:0;width:100%;height:100%;z-index:4500;pointer-events:none;overflow:visible}
 .rail path{fill:none;stroke-linecap:round}
 .rail .t{stroke:var(--line);stroke-width:4}
@@ -474,10 +476,14 @@ const ax=e=>LV?e.clientY:e.clientX,edge=()=>{const r=strip.getBoundingClientRect
 // opening ripples out from the letter under the finger; closing folds the far letters in first, towards the chosen one
 function ripple(opening){const as=[...strip.querySelectorAll('a')],i0=Math.max(0,as.indexOf(strip.querySelector('a.on'))),m=Math.max(i0,as.length-1-i0);
 as.forEach((a,i)=>{const k=Math.abs(i-i0);a.style.setProperty('--d',(opening?k*12:(m-k)*6)+'ms')})}
-bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);try{bar.setPointerCapture(e.pointerId)}catch(_){}pick(ax(e));
+// list view: the bar is an ordinary scroll bar; drag anywhere along it and the knob follows the finger
+function lseek(y){const len=strip.getBoundingClientRect().height,kn=knob.offsetWidth,max=list.scrollHeight-list.clientHeight;
+const f=Math.max(0,Math.min(1,(y-edge()-kn/2)/Math.max(1,len-kn)));list.scrollTop=f*max;lknob()}
+bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';clearTimeout(timer);try{bar.setPointerCapture(e.pointerId)}catch(_){}
+if(LV){bar.classList.add('drag');lseek(ax(e));return}pick(ax(e));
 if(!bar.classList.contains('open')){ripple(true);bar.classList.add('open')}if(!reduce)mag(ax(e))});
-bar.addEventListener('pointermove',e=>{if(down){pick(ax(e));if(!reduce)mag(ax(e))}});
-const end=()=>{if(!down)return;down=false;unmag();clearTimeout(timer);timer=setTimeout(()=>{ripple(false);bar.classList.remove('open')},650)};
+bar.addEventListener('pointermove',e=>{if(!down)return;if(LV){lseek(ax(e));return}pick(ax(e));if(!reduce)mag(ax(e))});
+const end=()=>{if(!down)return;down=false;if(bar.classList.contains('drag')){bar.classList.remove('drag');return}unmag();clearTimeout(timer);timer=setTimeout(()=>{ripple(false);bar.classList.remove('open')},650)};
 bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);bar.addEventListener('click',e=>e.preventDefault());
 
 function fly(el,rect,rad,bare){const r=rect||el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');d.className='fly';
@@ -523,13 +529,15 @@ d.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+
 [...c.children].forEach(n=>{if(n.tagName!=='TEMPLATE')d.appendChild(n.cloneNode(true))});document.body.appendChild(d);return d}
 function vplace(){const b=bar.style;if(!LV){b.top=b.left=b.width='';return}const t=document.querySelector('.masthead').getBoundingClientRect().bottom+12;
 b.top=(t-22)+'px';b.left=(innerWidth-24)+'px';b.width=Math.max(160,innerHeight-t-76)+'px'}
-function vstate(){vbtn.classList.toggle('lv',LV);vbtn.setAttribute('aria-label',LV?'Show as covers':'Show as list');document.body.classList.toggle('listing',LV);vplace()}
+function vstate(){if(LV){clearTimeout(timer);bar.classList.remove('open','mag');sh.a=sh.ta=0}else bar.classList.remove('drag');vbtn.classList.toggle('lv',LV);vbtn.setAttribute('aria-label',LV?'Show as covers':'Show as list');document.body.classList.toggle('listing',LV);vplace()}
 function geom(){const r=bar.getBoundingClientRect(),k=knob.getBoundingClientRect();
 return LV?{v:1,x:r.left+r.width/2,a:r.top,b:r.bottom,k:k.top+k.height/2}:{v:0,y:r.top+r.height/2,a:r.left,b:r.right,k:k.left+k.width/2}}
-// the letter bar's track and knob slide along one path: the bottom edge, round the bottom-right corner, up the right edge
+// the bar's track and knob slide along one path: the bottom edge, round the bottom-right corner, up the right edge
 let rfin=null;
-function rail(g0,g1){if(reduce||g0.v===g1.v)return;const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,R=Math.max(0,Math.min(44,y-v.b,xv-h.b)),
-sv=xv-R-x0+Math.PI*R/2,sH=x=>x-x0,sV=q=>sv+(y-R-q),d='M'+x0+' '+y+'H'+(xv-R)+'A'+R+' '+R+' 0 0 0 '+xv+' '+(y-R)+'V'+Math.min(v.a,y-R),
+// the corner is a wide quarter circle (it may swallow the ends of both bars); points on it are mapped by arc length
+function rail(g0,g1){if(reduce||g0.v===g1.v)return;const h=g0.v?g1:g0,v=g0.v?g0:g1,y=h.y,x0=h.a,xv=v.x,
+R=Math.max(0,Math.min(150,Math.min(innerWidth,innerHeight)*.22,(y-v.a)*.45,(xv-x0)*.45)),cl=(t,a,b)=>Math.max(a,Math.min(b,t)),
+h0=xv-R-x0,sv=h0+Math.PI*R/2,sH=x=>x<=xv-R?x-x0:h0+R*Math.asin(cl((x-xv+R)/(R||1),0,1)),sV=q=>q<=y-R?sv+(y-R-q):h0+R*Math.acos(cl((q-y+R)/(R||1),0,1)),d='M'+x0+' '+y+'H'+(xv-R)+'A'+R+' '+R+' 0 0 0 '+xv+' '+(y-R)+'V'+Math.min(v.a,y-R),
 tr=[[sH(h.a)+2,sH(h.b)-2],[sV(v.b)+2,sV(v.a)-2]],kn=[sH(h.k),sV(v.k)],s=document.createElementNS('http://www.w3.org/2000/svg','svg');
 s.setAttribute('class','rail');s.innerHTML='<path class="t" d="'+d+'"/><path class="k" d="'+d+'"/>';document.body.appendChild(s);
 const i=g0.v?1:0,j=1-i,seg=(a,b)=>({strokeDasharray:(b-a).toFixed(1)+'px 100000px',strokeDashoffset:(-a).toFixed(1)+'px'}),o={duration:DUR+200,easing:EASE,fill:'forwards'};
