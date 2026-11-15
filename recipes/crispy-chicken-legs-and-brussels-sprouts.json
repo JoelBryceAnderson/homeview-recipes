@@ -1,0 +1,67 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "One-Pan Crispy Chicken Legs & Brussels Sprouts",
+  "description": "Skin-on chicken legs seared crisp in a cast iron skillet, then finished in the oven on a bed of lemony Brussels sprouts. Gluten-free and paleo.",
+  "recipeCategory": "Main Course",
+  "recipeCuisine": "American",
+  "keywords": "chicken legs, Brussels sprouts, one pan, cast iron, gluten-free, paleo",
+  "cookTime": "PT50M",
+  "recipeYield": "2 servings",
+  "recipeIngredient": [
+    "2 whole chicken legs (skin on and bone in)",
+    "1 stalk of Brussels sprouts, stemmed and chopped",
+    "1 generous tbsp coconut oil",
+    "salt, pepper and granulated garlic",
+    "1 tbsp olive oil, for sprouts",
+    "Juice of 1 lemon",
+    "1/4 cup chicken stock",
+    "Pecorino or Parmesan cheese to garnish (optional)"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Preheat",
+      "text": "Preheat the oven to 425°F."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Prep the sprouts",
+      "text": "Wash, de-stem and halve the Brussels sprouts. Toss in a bowl with 1 tbsp olive oil and a pinch or two of salt, pepper and granulated garlic, to your taste."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Season the chicken",
+      "text": "Wash the chicken legs and pat them dry. Liberally season both sides with salt, pepper and granulated garlic. Set aside."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Heat the oil",
+      "text": "Heat 1 generous tbsp coconut oil in a cast iron skillet until hot. To test, flick a drop of water into the oil; it should hiss and sizzle."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Crisp the first side",
+      "text": "Add the chicken legs to the pan skin side down. Let them sit and get crispy without moving them, about 6 to 8 minutes."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Crisp the second side",
+      "text": "Flip the legs and crisp the other side."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Add sprouts and bake",
+      "text": "Add the Brussels sprouts to the pan along with 1/4 cup chicken stock and the juice of 1 lemon. Stir. Place the pan in the oven and bake 30 minutes or until the chicken is cooked through and the juices run clear."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Garnish and serve",
+      "text": "Garnish with freshly grated Pecorino or Parmesan and serve."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "For paleo, skip the cheese; it's still very tasty."
+    }
+  ]
+}
