@@ -161,6 +161,8 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .scrub .letters a.on{color:var(--accent)}
 .scrub .letters.lit a.on{color:#fff}
 .scrub .letters a.off{color:var(--muted);opacity:.35}
+.scrub .letters a.on.off{opacity:.9}
+.scrub .letters.offsel .sel{background:var(--muted)}
 /* index: list view */
 .list{position:absolute;inset:0;z-index:4000;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 16px 16px}
 .list[hidden],.row[hidden],.lh[hidden]{display:none}
@@ -210,15 +212,17 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .sheet .ver{margin:14px 0 0;text-align:center;font-size:.7em;color:var(--muted);font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .sheet section[hidden]{display:none}
 /* motion */
-.fly{position:fixed;z-index:9000;pointer-events:none;perspective:1800px;transform-origin:50% 50%;will-change:transform;-webkit-box-reflect:below 6px linear-gradient(transparent 74%,rgba(255,255,255,.16))}
+.fly{position:fixed;z-index:9000;pointer-events:none;perspective:1800px;transform-origin:50% 50%;-webkit-box-reflect:below 6px linear-gradient(transparent 74%,rgba(255,255,255,.16))}
 :root.tween,:root.tween *,:root.tween *::before,:root.tween *::after{transition:background-color .45s cubic-bezier(.3,0,.2,1),color .45s cubic-bezier(.3,0,.2,1),border-color .45s,box-shadow .45s,fill .45s,stroke .45s,opacity .2s!important}
 .flip{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
-.face{position:absolute;inset:0;overflow:hidden;border-radius:18px;-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.face{position:absolute;inset:0;overflow:hidden;border-radius:18px;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.fly .sh{position:absolute;inset:0;pointer-events:none}
 .front{color:#fff;background:var(--card)}
 .front img,.front .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .front.pic .cap{background:linear-gradient(rgba(0,0,0,.45),transparent 30%,transparent 48%,rgba(0,0,0,.72))}
 .backf{transform:rotateY(180deg);background:var(--paper)}
-.pg{position:absolute;left:0;top:0;transform-origin:0 0;color:var(--ink);text-align:left}
+.fc{position:absolute;left:0;top:0;transform-origin:0 0}
+.pg{position:absolute;inset:0;overflow:hidden;transform:translateZ(0);color:var(--ink);text-align:left}
 .pg .in{max-width:760px;margin:0 auto;padding:16px 22px}
 """
 
@@ -379,12 +383,7 @@ const bar=document.querySelector('.mini'),h=document.querySelector('.head h1');
 if(bar&&h)new IntersectionObserver(([en])=>{const off=!en.isIntersecting&&en.boundingClientRect.top<0;bar.classList.toggle('show',off);bar.setAttribute('aria-hidden',off?'false':'true')}).observe(h);
 const slug=location.pathname.split('/').filter(Boolean).pop();
 ss.set('hv-open',null);
-document.querySelectorAll('a.back').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();ss.set('hv-back',slug);ss.set('hv-pos',slug);
-if(reduce){location.href=a.href;return}
-const y0=scrollY;if(y0<2){location.href=a.href;return}
-const ms=Math.min(520,240+y0*.25),t0=performance.now();let gone=false;const leave=()=>{if(!gone){gone=true;location.href=a.href}};
-const tick=t=>{const k=Math.min(1,(t-t0)/ms),ez=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;scrollTo(0,y0*(1-ez));if(k<1)requestAnimationFrame(tick);else leave()};
-requestAnimationFrame(tick);setTimeout(leave,ms+300)}));
+document.querySelectorAll('a.back').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();ss.set('hv-back',slug);ss.set('hv-pos',slug);ss.set('hv-y',String(Math.round(scrollY)));ss.set('hv-mini',bar&&bar.classList.contains('show')?'1':null);location.href=a.href}));
 addEventListener('pageshow',e=>{if(e.persisted)document.body.getAnimations().forEach(x=>x.cancel())});
 // keep the screen awake while a recipe is open; the lock drops when the page is hidden, so take it again on return
 let lock=null;const wake=()=>{if(!navigator.wakeLock||lock||document.visibilityState!=='visible')return;
@@ -480,10 +479,16 @@ function spring(){sh.vx=sh.vx*.6+(sh.tx-sh.x)*.24;sh.x+=sh.vx;sh.va=sh.va*.62+(s
 if(Math.abs(sh.tx-sh.x)+Math.abs(sh.vx)+Math.abs(sh.ta-sh.a)+Math.abs(sh.va)>.05){sraf=requestAnimationFrame(spring);return}
 sraf=0;sh.x=sh.tx;sh.a=sh.ta;sh.vx=sh.va=0;if(!sh.ta){bar.classList.remove('mag');where.style.opacity='';if(!anim){sync();return}}draw()}
 const kick=()=>{if(!sraf)sraf=requestAnimationFrame(spring)};
-function mag(x){const on=strip.querySelector('a.on:not(.off)'),rx=on?on.offsetLeft+on.offsetWidth/2:x-edge();if(!bar.classList.contains('mag')){sh.x=rx}sh.tx=rx;sh.ta=AMAX;bar.classList.add('mag');where.style.opacity='0';kick()}
+function mag(x){const on=strip.querySelector('a.on'),rx=on?on.offsetLeft+on.offsetWidth/2:x-edge();if(!bar.classList.contains('mag')){sh.x=rx}sh.tx=rx;sh.ta=AMAX;bar.classList.add('mag');where.style.opacity='0';kick()}
 function unmag(){sh.ta=0;kick()}
-function pick(x){let best=null,d=1e9;const L=edge();[...strip.querySelectorAll('a:not(.off)')].forEach(a=>{const m=Math.abs(L+a.offsetLeft+a.offsetWidth/2-x);if(m<d){d=m;best=a}});
-if(best&&best.dataset.l!==picked){picked=best.dataset.l;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a===best));draw();jump(vis.findIndex(c=>c.dataset.letter===picked))}}
+// the highlight follows the finger onto any letter, empty ones included; the list jumps to the nearest letter that has recipes,
+// and on release the highlight slides over to that letter
+let hov=null;
+function pick(x){const L=edge(),near=sel=>{let b=null,d=1e9;strip.querySelectorAll(sel).forEach(a=>{const m=Math.abs(L+a.offsetLeft+a.offsetWidth/2-x);if(m<d){d=m;b=a}});return b};
+const h=near('a'),best=near('a:not(.off)');if(h&&h!==hov){hov=h;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a===h));strip.classList.toggle('offsel',h.classList.contains('off'));draw()}
+if(best&&best.dataset.l!==picked){picked=best.dataset.l;jump(vis.findIndex(c=>c.dataset.letter===picked))}}
+function settleLetter(){hov=null;strip.classList.remove('offsel');if(!picked)return;strip.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.l===picked));
+const on=strip.querySelector('a.on');if(on&&!reduce){sh.tx=on.offsetLeft+on.offsetWidth/2;kick()}draw()}
 function jump(i){if(!LV){go(i);return}const r=lrows[i];if(r)list.scrollTo({top:r.offsetTop-hh(),behavior:reduce?'auto':'smooth'})}
 const ax=e=>LV?e.clientY:e.clientX,edge=()=>{const r=strip.getBoundingClientRect();return LV?r.top:r.left};
 // opening ripples out from the letter under the finger; closing folds the far letters in first, towards the chosen one
@@ -498,28 +503,32 @@ bar.addEventListener('pointerdown',e=>{e.preventDefault();down=true;picked='';cl
 if(LV){bar.classList.add('drag');const kn=knob.offsetWidth,o=ax(e)-btop()-kpos();grab=o>=-8&&o<=kn+8?Math.max(0,Math.min(kn,o)):kn/2;lseek(ax(e));return}pick(ax(e));
 if(!bar.classList.contains('open')){ripple(true);bar.classList.add('open')}if(!reduce)mag(ax(e))});
 bar.addEventListener('pointermove',e=>{if(!down)return;if(LV){lseek(ax(e));return}pick(ax(e));if(!reduce)mag(ax(e))});
-const end=()=>{if(!down)return;down=false;if(bar.classList.contains('drag')){bar.classList.remove('drag');return}unmag();clearTimeout(timer);timer=setTimeout(()=>{ripple(false);bar.classList.remove('open')},650)};
+const end=()=>{if(!down)return;down=false;if(bar.classList.contains('drag')){bar.classList.remove('drag');return}settleLetter();unmag();clearTimeout(timer);timer=setTimeout(()=>{ripple(false);bar.classList.remove('open')},650)};
 bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);bar.addEventListener('click',e=>e.preventDefault());
 
-function fly(el,rect,rad,bare){const r=rect||el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');d.className='fly';
-d.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px';
-d.innerHTML='<div class="flip"><div class="face front'+(el.classList.contains('pic')?' pic':'')+'"></div><div class="face backf"><div class="pg" style="width:'+W+'px;height:'+H+'px;transform:scale('+r.width/W+','+r.height/H+')"><div class="in"></div></div></div></div>';
-const front=d.querySelector('.front');[...el.children].forEach(n=>{if(n.tagName!=='TEMPLATE'&&!(bare&&n.classList.contains('cap')))front.appendChild(n.cloneNode(true))});
-d.querySelector('.in').innerHTML=el.querySelector('template').innerHTML;document.body.appendChild(d);
+function fly(el,rect,rad,bare,y){const r=rect||el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');d.className='fly';
+// the card is built at full-screen size and scaled down, so it is rasterised at 1:1 and lands sharp instead of being a blown-up cover
+d.style.cssText='left:0;top:0;width:'+W+'px;height:'+H+'px;perspective:'+(1800*W/r.width).toFixed(0)+'px';
+const s0=r.width/W;d.innerHTML='<div class="flip"><div class="sh" style="border-radius:'+(18/s0).toFixed(1)+'px / '+(18*H/r.height).toFixed(1)+'px;box-shadow:0 '+(14/s0).toFixed(0)+'px '+(40/s0).toFixed(0)+'px rgba(0,0,0,.3)"></div><div class="face front'+(el.classList.contains('pic')?' pic':'')+'"><div class="fc" style="width:'+r.width+'px;height:'+r.height+'px;--s:'+r.width+'px;transform:scale('+W/r.width+','+H/r.height+') translateZ(0)"></div></div><div class="face backf"><div class="pg"><div class="in"></div></div></div></div>';
+const front=d.querySelector('.fc');[...el.children].forEach(n=>{if(n.tagName!=='TEMPLATE'&&!(bare&&n.classList.contains('cap')))front.appendChild(n.cloneNode(true))});
+const inn=d.querySelector('.in');inn.innerHTML=el.querySelector('template').innerHTML;if(y)inn.style.transform='translateY('+(-y)+'px)';
+if(y&&ss.get('hv-mini')){const m=document.createElement('nav'),im=el.querySelector('img');m.className='mini show';m.style.position='absolute';
+m.innerHTML='<div><span class="back">Recipes</span>'+(im?'<img class="thumb" alt="" src="'+im.getAttribute('src')+'">':'')+'<b></b></div>';m.querySelector('b').textContent=el.querySelector('b').textContent;d.querySelector('.pg').appendChild(m)}
+document.body.appendChild(d);
 return{d,flip:d.firstChild,faces:[...d.querySelectorAll('.face')],r:{x:r.left,y:r.top,w:r.width,h:r.height,r:rad||18}}}
 const full=()=>({x:0,y:0,w:innerWidth,h:innerHeight,r:0});
-function morph(o,a,b,r0,r1,lift,done){const fr=arc(o.r,a,b,lift),opt={duration:FDUR,easing:FEASE,fill:'forwards'};
+function morph(o,a,b,r0,r1,lift,done){const fr=arc(full(),a,b,lift),opt={duration:FDUR,easing:FEASE,fill:'forwards'};
 o.d.animate(fr.map(f=>({transform:f.transform,offset:f.offset})),opt);
 o.faces.forEach(x=>x.animate(fr.map(f=>({borderRadius:f.borderRadius,offset:f.offset})),opt));
 let fin=false;const f=()=>{if(fin)return;fin=true;done()};
 o.flip.animate([{transform:'rotateY('+r0+'deg)'},{transform:'rotateY('+r1+'deg)'}],opt).onfinish=f;setTimeout(f,FDUR+400)}
 function open(el){ss.set('hv-pos',el.dataset.slug);const href=el.getAttribute('href');if(reduce){location.href=href;return}
 ss.set('hv-open','1');const o=fly(el);el.style.opacity='0';morph(o,o.r,full(),0,180,innerHeight*.1,()=>{location.href=href})}
-function back(){const slug=ss.get('hv-back');ss.set('hv-back',null);if(!slug||reduce)return;
-if(LV){const r=rowOf(slug);if(!r||r.hidden)return;const th=r.querySelector('.th'),o=fly(coverOf(slug),th.getBoundingClientRect(),10,true);th.style.opacity='0';
+function back(){const slug=ss.get('hv-back'),y=+ss.get('hv-y')||0;ss.set('hv-back',null);ss.set('hv-y',null);setTimeout(()=>ss.set('hv-mini',null),0);if(!slug||reduce)return;
+if(LV){const r=rowOf(slug);if(!r||r.hidden)return;const th=r.querySelector('.th'),o=fly(coverOf(slug),th.getBoundingClientRect(),10,true,y);th.style.opacity='0';
 morph(o,full(),o.r,180,0,innerHeight*.06,()=>{th.style.opacity='';o.d.remove()});return}
 const el=vis.find(c=>c.dataset.slug===slug);if(!el)return;
-const o=fly(el);el.style.opacity='0';morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()})}
+const o=fly(el,null,0,false,y);el.style.opacity='0';morph(o,full(),o.r,180,0,innerHeight*.06,()=>{el.style.opacity='';o.d.remove()})}
 flow.addEventListener('click',e=>{if(anyOpen())return;const el=document.elementsFromPoint(e.clientX,e.clientY).find(n=>n.classList&&n.classList.contains('cover'));
 if(!el)return;e.preventDefault();const i=vis.indexOf(el);if(i===cur)open(el);else go(i)});
 addEventListener('keydown',e=>{if(anyOpen()){if(e.key==='Escape')closeSheet();return}if(LV)return;
