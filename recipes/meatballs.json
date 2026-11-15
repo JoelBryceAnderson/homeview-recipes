@@ -1,0 +1,68 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Meatballs",
+  "description": "Beef and Italian sausage meatballs made with mashed potato instead of bread crumbs, baked or pan-fried and served in sauce over noodles. Optionally stuffed with mozzarella.",
+  "recipeCategory": "Main Course",
+  "recipeCuisine": "Italian-American",
+  "keywords": "meatballs, Italian sausage, mashed potato, stuffed meatballs",
+  "recipeYield": "Makes about 1-inch meatballs",
+  "recipeIngredient": [
+    "1 to 2 lb ground beef (usually 1 1/2 lb hamburger plus 1 lb bulk sweet Italian sausage)",
+    "1 potato",
+    "2/3 cup milk (whole or 2 percent)",
+    "1 egg",
+    "1/4 cup parmesan cheese",
+    "2 teaspoons Kosher salt",
+    "1 Tbsp chopped fresh parsley",
+    "2 teaspoons black pepper",
+    "1 teaspoon dried oregano or marjoram",
+    "2 to 3 garlic cloves, minced",
+    "Olive oil, for pan frying (optional)",
+    "Mozzarella brick or string cheese, cubed and frozen (optional, for stuffing)",
+    "Your favorite sauce and noodles, to serve"
+  ],
+  "recipeInstructions": [
+    {
+      "@type": "HowToStep",
+      "name": "Make the mashed potato",
+      "text": "Bake 1 potato (microwave works), let it cool a few minutes, then peel and mash with 2/3 cup milk using a fork."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Add seasonings",
+      "text": "Add 1 egg, 1/4 cup parmesan, 2 teaspoons Kosher salt, 1 Tbsp chopped fresh parsley, 2 teaspoons black pepper, 1 teaspoon dried oregano or marjoram, and 2 to 3 minced garlic cloves to the mashed potato and mix until well combined."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Add the meat and form",
+      "text": "Add the ground meat and combine well. Form into meatballs, wrapping each around a cube of cheese if making stuffed meatballs."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Cook",
+      "text": "Pan fry in olive oil, or bake at 350°F on a cooling rack set over a 13x9 pan to catch drippings, until no longer pink, about 15 minutes for 1-inch meatballs. If stuffed, gently turn halfway through cooking."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Serve",
+      "text": "Toss with your favorite sauce and serve over noodles."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Fresh parsley and fresh garlic work best here."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Stuffing with cheese: cut mozzarella into cubes and freeze them before you start the meat mixture. Frozen cheese oozes out less as the meatballs cook."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "Forming: the meat mixture is easier to shape if your hands are not hot, so rinse them under cold water before forming meatballs."
+    },
+    {
+      "@type": "HowToTip",
+      "text": "The mashed potato replaces bread crumbs."
+    }
+  ]
+}
