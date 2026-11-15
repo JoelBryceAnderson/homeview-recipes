@@ -642,8 +642,11 @@ def page(r, slug, base):
     r = {"@context": "https://schema.org", **r}
     imgs = images_of(r)
     hero = ("../" + imgs[0]) if imgs and is_local(imgs[0]) else (imgs[0] if imgs else None)
-    if imgs:  # JSON-LD wants absolute URLs
-        r["image"] = [base + i if is_local(i) else i for i in imgs]
+    og = ""
+    if imgs:  # JSON-LD wants absolute URLs; a single image as a plain string, the form Apple's own example uses
+        absolute = [base + i if is_local(i) else i for i in imgs]
+        r["image"] = absolute[0] if len(absolute) == 1 else absolute
+        og = f'<meta property="og:image" content="{e(absolute[0])}">\n'
     header = head_html(r, hero)
     source = r.get("isBasedOn") or r.get("url")
     ld_json = json.dumps(r, indent=2, ensure_ascii=False).replace("</", "<\\/")
@@ -653,7 +656,8 @@ def page(r, slug, base):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>{e(r['name'])}</title>
-<script>{THEME_JS}</script>
+<meta property="og:title" content="{e(r['name'])}">
+{og}<script>{THEME_JS}</script>
 <script type="application/ld+json">
 {ld_json}
 </script>
