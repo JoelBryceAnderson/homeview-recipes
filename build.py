@@ -221,7 +221,7 @@ transform-origin:50% 78px;transform:scale(.97,.1);opacity:0;transition:transform
 .front img,.front .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .front.pic .cap{background:linear-gradient(rgba(0,0,0,.45),transparent 30%,transparent 48%,rgba(0,0,0,.72))}
 .backf{transform:rotateY(180deg);background:var(--paper)}
-.fc{position:absolute;left:0;top:0;transform-origin:0 0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.fc{position:absolute;left:0;top:0;transform-origin:0 0}
 .pg{position:absolute;inset:0;overflow:hidden;color:var(--ink);text-align:left}
 .pg .in{max-width:760px;margin:0 auto;padding:16px 22px}
 """
